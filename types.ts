@@ -31,7 +31,7 @@ export interface Choice {
     effectType?: 'damage' | 'heal' | 'sleep' | 'neutral'; 
     stageUnlock?: GameStage;
     retry?: boolean; 
-    sound?: string; // 新增：指定该选项触发的特定音效 (对应 audio_assets 中的 key)
+    sound?: string; 
   };
   condition?: (stats: GameStats) => boolean; 
 }
@@ -72,18 +72,41 @@ export type GamePhase =
   | 'GAME_OVER' 
   | 'VICTORY';
 
+// 30+ Endings / Achievements
 export type EndingType = 
-  | 'DOMESTICATED' 
-  | 'STARVED'      
-  | 'STUPID'       
-  | 'OLD_CAT'      
-  | 'LORD_ONLY'    
-  | 'SUPERSTAR'    
-  | 'STRAY_HEALTH_0' | 'STRAY_SATIETY_0' | 'STRAY_HISSING_0'
-  | 'LORD_HEALTH_0' | 'LORD_SATIETY_0' | 'LORD_HISSING_0'
-  | 'MANSION_HEALTH_0' | 'MANSION_SATIETY_0' | 'MANSION_HISSING_0'
-  | 'CELEBRITY_HEALTH_0' | 'CELEBRITY_SATIETY_0' | 'CELEBRITY_HISSING_0'
-  | 'END_APPRENTICE_MASTER' | 'END_APPRENTICE_REVENGE' | 'END_EGG_FREEDOM';
+  // --- DEATH / FAILURE (12) ---
+  | 'STRAY_STARVED' | 'STRAY_FROZEN' | 'STRAY_DOMESTICATED'
+  | 'LORD_DEPOSED' | 'LORD_KILLED' | 'LORD_SOFT'
+  | 'MANSION_THROWN_OUT' | 'MANSION_OBESITY' | 'MANSION_DOLL'
+  | 'CELEB_EXHAUSTED' | 'CELEB_FORGOTTEN' | 'CELEB_FAKE'
+  
+  // --- SPECIAL DEATHS (2) ---
+  | 'STUPID_DEATH' | 'PHILOSOPHY_DEATH'
+
+  // --- SURVIVAL / STAGE COMPLETION (4) ---
+  | 'SURVIVOR_STRAY' | 'LEGEND_LORD' | 'LEGEND_COMFORT' | 'LEGEND_SUPERSTAR'
+
+  // --- STORY CHAINS (7) ---
+  | 'ACH_APPRENTICE_MASTER' | 'ACH_APPRENTICE_RIVAL' | 'ACH_APPRENTICE_TRAITOR'
+  | 'ACH_LOVE_TRUE' | 'ACH_LOVE_REGRET' | 'ACH_LOVE_PLATONIC'
+  | 'ACH_EGG_DEFENDER' 
+
+  // --- PHILOSOPHY (3) ---
+  | 'ACH_PHILO_UTOPIA' | 'ACH_PHILO_NIHILISM' | 'ACH_PHILO_DICTATOR'
+
+  // --- TRAITS / STATS (6) ---
+  | 'TRAIT_SAINT' | 'TRAIT_DEVIL' | 'TRAIT_COWARD'
+  | 'STAT_MAX_SMARTS' | 'STAT_MAX_HISSING' | 'STAT_BALANCED';
+
+export interface EndingConfig {
+    id: EndingType;
+    title: string;
+    description: string;
+    icon: any; // Lucide Icon component
+    color: string;
+    image?: string;
+    isGood: boolean; // Is this considered a "Success" or at least a notable achievement?
+}
 
 export interface LogEntry {
   day: number;

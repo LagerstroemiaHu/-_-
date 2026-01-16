@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { GameStats, GamePhase, GameEvent, Choice, LogEntry, GameStage, Character, NightThought } from '../../types';
 import StatsDisplay from '../StatsDisplay';
@@ -9,8 +8,9 @@ import {
   Moon, ScrollText, Flag, Compass, Check,
   Sword, Coffee, Fish, Smartphone, Heart, Sparkles,
   Menu, Zap, Eye, AlertCircle, ArrowRight, Cat,
-  MessageSquareQuote, Volume2, VolumeX
+  MessageSquareQuote, Volume2, VolumeX, Battery, BatteryWarning
 } from 'lucide-react';
+import { TextScale } from '../../App';
 
 // Theme maps copied from App.tsx
 const STAT_THEME_MAP: Record<string, { gridBg: string, footerBg: string, border: string, btn: string }> = {
@@ -78,6 +78,26 @@ const getEventTheme = (event: GameEvent | null) => {
     return STAT_THEME_MAP['neutral'];
 };
 
+// Font Scaling Logic Update:
+// Small (was normal)
+// Normal (was medium)
+// Large (was large)
+const getTextClasses = (scale: TextScale, type: 'log' | 'desc' | 'choice' | 'title' | 'night_title' | 'night_desc' | 'action_title' | 'footer_text' | 'locked_title' | 'locked_reason') => {
+    const scales = {
+        log: { small: 'text-[0.5rem] md:text-[0.65rem]', normal: 'text-[0.6rem] md:text-[0.75rem]', large: 'text-[0.7rem] md:text-[0.85rem]' },
+        desc: { small: 'text-[0.65rem] md:text-[0.9rem]', normal: 'text-[0.75rem] md:text-[1rem]', large: 'text-[0.85rem] md:text-[1.1rem]' },
+        choice: { small: 'text-[0.6rem] md:text-sm', normal: 'text-[0.7rem] md:text-base', large: 'text-[0.8rem] md:text-lg' },
+        title: { small: 'text-2xl md:text-4xl', normal: 'text-3xl md:text-5xl', large: 'text-4xl md:text-6xl' },
+        night_title: { small: 'text-xs md:text-sm', normal: 'text-sm md:text-base', large: 'text-base md:text-lg' },
+        night_desc: { small: 'text-xs md:text-base', normal: 'text-sm md:text-lg', large: 'text-base md:text-xl' },
+        action_title: { small: 'text-[0.75rem] md:text-[0.95rem]', normal: 'text-[0.85rem] md:text-[1.05rem]', large: 'text-[0.95rem] md:text-[1.2rem]' },
+        footer_text: { small: 'text-[0.8rem] md:text-[1rem]', normal: 'text-[0.95rem] md:text-[1.2rem]', large: 'text-[1.1rem] md:text-[1.4rem]' },
+        locked_title: { small: 'text-[0.5rem] md:text-[0.6rem]', normal: 'text-[0.6rem] md:text-[0.7rem]', large: 'text-[0.7rem] md:text-[0.8rem]' },
+        locked_reason: { small: 'text-[0.4rem] md:text-[0.55rem]', normal: 'text-[0.5rem] md:text-[0.65rem]', large: 'text-[0.6rem] md:text-[0.75rem]' }
+    };
+    return scales[type][scale];
+};
+
 interface Props {
     phase: GamePhase;
     day: number;
@@ -101,6 +121,9 @@ interface Props {
     // Actions derived from parent
     unlockedActions: GameEvent[];
     lockedActions: GameEvent[];
+    
+    // Pass scale
+    textScale: TextScale;
 
     // Handlers
     onMenuOpen: () => void;
@@ -121,13 +144,17 @@ export const MainGame: React.FC<Props> = ({
     phase, day, maxDays, stats, character, stage, logs, actionPoints,
     dailyActionsTaken, currentEvent, eventResult, activeEffect,
     isShaking, isImpactShaking, isFlashActive, isStageTransitioning, isShutterActive,
-    currentNightThought, unlockedActions, lockedActions,
+    currentNightThought, unlockedActions, lockedActions, textScale,
     onMenuOpen, onChoice, onResolutionComplete, onStartDay, onFinishGame,
     onSetEvent, onSetEventResult, onUpdateStats, onSetDay, onSetPhase
 }) => {
     
     const [displayStage, setDisplayStage] = useState<GameStage>(stage);
     const [muted, setMuted] = useState(audioManager.isMuted);
+    // Action Point Consumption Animation State
+    const [consumingIndex, setConsumingIndex] = useState<number | null>(null);
+    const prevActionPoints = useRef(actionPoints);
+
     const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const toggleMute = () => {
@@ -140,6 +167,21 @@ export const MainGame: React.FC<Props> = ({
             setDisplayStage(stage);
         }
     }, [stage, isStageTransitioning]);
+
+    // Action Points Consumption Animation Effect
+    useEffect(() => {
+        // If points decreased
+        if (actionPoints < prevActionPoints.current) {
+            // The index of the point that was just lost is equal to the NEW actionPoints count
+            // Example: 3 -> 2. The point at index 2 (the 3rd one) is lost.
+            setConsumingIndex(actionPoints);
+            const timer = setTimeout(() => {
+                setConsumingIndex(null);
+            }, 1000); // Slower animation (1s)
+            return () => clearTimeout(timer);
+        }
+        prevActionPoints.current = actionPoints;
+    }, [actionPoints]);
 
     // Low stats warning sound loop
     useEffect(() => {
@@ -169,7 +211,18 @@ export const MainGame: React.FC<Props> = ({
 
     const currentTheme = getEventTheme(currentEvent);
     const feedbackText = eventResult ? eventResult.message : currentEvent?.description || "";
-    const feedbackFontSize = feedbackText.length > 50 ? 'text-[8px] md:text-xs' : 'text-[10px] md:text-sm';
+    
+    // Dynamic text classes
+    const logTextClass = getTextClasses(textScale, 'log');
+    const descTextClass = getTextClasses(textScale, 'desc');
+    const choiceTextClass = getTextClasses(textScale, 'choice');
+    const titleTextClass = getTextClasses(textScale, 'title');
+    const nightTitleClass = getTextClasses(textScale, 'night_title');
+    const nightDescClass = getTextClasses(textScale, 'night_desc');
+    const actionTitleClass = getTextClasses(textScale, 'action_title');
+    const footerTextClass = getTextClasses(textScale, 'footer_text');
+    const lockedTitleClass = getTextClasses(textScale, 'locked_title');
+    const lockedReasonClass = getTextClasses(textScale, 'locked_reason');
 
     return (
         <div className={`fixed inset-0 flex flex-col ${STAGE_BG_MAP[displayStage]} font-sans overflow-hidden border-[4px] md:border-[6px] border-black select-none transition-all duration-1000 ${isShaking ? 'animate-shake' : ''} ${isImpactShaking ? 'animate-impact' : ''}`}>
@@ -213,34 +266,34 @@ export const MainGame: React.FC<Props> = ({
                                 </div>
                             </div>
                         </div>
-                        <div className="mt-0.5 md:mt-2 px-1 md:px-2 py-0.5 bg-black text-white font-black text-[6px] md:text-[9px] text-center uppercase tracking-widest w-full truncate italic leading-none">{stage}</div>
+                        <div className="mt-0.5 md:mt-2 px-1 md:px-2 py-0.5 bg-black text-white font-black text-[0.4rem] md:text-[0.6rem] text-center uppercase tracking-widest w-full truncate italic leading-none">{stage}</div>
                     </div>
 
                     <div className={`flex-1 md:flex-1 bg-white border-[4px] border-black flex flex-col overflow-hidden shadow-[4px_4px_0px_0px_black] ${isImpactShaking ? 'animate-impact' : ''}`}>
                         <div className="bg-amber-400 text-black px-1 md:px-2 py-0.5 flex items-center shrink-0 border-b-[2px] md:border-b-[3px] border-black">
-                            <span className="font-black text-[10px] md:text-xs uppercase flex items-center gap-1 tracking-tighter"><Eye size={12} /> 待解锁</span>
+                            <span className="font-black text-[0.65rem] md:text-[0.8rem] uppercase flex items-center gap-1 tracking-tighter"><Eye size={12} /> 待解锁</span>
                         </div>
                         <div className="flex-1 overflow-y-auto p-1 md:p-1.5 space-y-1 md:space-y-1.5 no-scrollbar bg-stone-50">
                             {lockedActions.length > 0 ? lockedActions.map(action => (
                                 <div key={action.id} className="p-0.5 md:p-1 border-[1.5px] border-dashed border-stone-400 bg-white opacity-60">
-                                    <div className="font-black text-[7px] md:text-[8px] text-stone-600 truncate uppercase leading-none">{action.title}</div>
-                                    <div className="text-[6px] md:text-[8px] font-bold text-rose-500 italic mt-0.5 leading-tight truncate">
+                                    <div className={`font-black text-stone-600 truncate uppercase leading-none ${lockedTitleClass}`}>{action.title}</div>
+                                    <div className={`font-bold text-rose-500 italic mt-0.5 leading-tight truncate ${lockedReasonClass}`}>
                                         锁: {action.unlockCondition?.(day, stats, [], [], {}).reason || '未达要求'}
                                     </div>
                                 </div>
                             )) : (
-                                <div className="text-[9px] md:text-[10px] text-stone-400 font-black italic text-center p-2 uppercase">无远大志向</div>
+                                <div className="text-[0.6rem] md:text-[0.7rem] text-stone-400 font-black italic text-center p-2 uppercase">无远大志向</div>
                             )}
                         </div>
                     </div>
 
                     <div className={`flex-1 md:flex-1 bg-white border-[4px] border-black flex flex-col overflow-hidden shadow-[4px_4px_0px_0px_black] ${isImpactShaking ? 'animate-impact' : ''}`}>
                         <div className="bg-stone-800 text-white px-1 md:px-2 py-0.5 flex items-center shrink-0 border-b-[2px] md:border-b-[3px] border-black">
-                            <span className="font-black text-[10px] md:text-xs uppercase flex items-center gap-1 tracking-tighter"><ScrollText size={12} /> 日志</span>
+                            <span className="font-black text-[0.65rem] md:text-[0.8rem] uppercase flex items-center gap-1 tracking-tighter"><ScrollText size={12} /> 日志</span>
                         </div>
                         <div className="flex-1 overflow-y-auto p-0.5 md:p-1.5 space-y-1 bg-white custom-scrollbar">
                             {logs.map((log, i) => (
-                                <div key={i} className={`p-0.5 md:p-1 border-[1.5px] border-black bg-white text-[7px] md:text-[8px] font-black shadow-[1px_1px_0px_0px_black] leading-tight ${log.type === 'success' ? 'bg-emerald-50 border-emerald-500' : log.type === 'danger' ? 'bg-rose-50 border-rose-500' : ''}`}>
+                                <div key={i} className={`p-0.5 md:p-1 border-[1.5px] border-black bg-white font-black shadow-[1px_1px_0px_0px_black] leading-tight ${log.type === 'success' ? 'bg-emerald-50 border-emerald-500' : log.type === 'danger' ? 'bg-rose-50 border-rose-500' : ''} ${logTextClass}`}>
                                     <span className="text-stone-400">[{log.day}D]</span> {log.message}
                                 </div>
                             ))}
@@ -249,11 +302,56 @@ export const MainGame: React.FC<Props> = ({
                 </section>
 
                 <section className={`flex-1 flex flex-col overflow-hidden bg-white/90 border-[4px] md:border-[6px] border-black shadow-[6px_6px_0px_0px_black] md:shadow-[8px_8px_0px_0px_black] transition-all duration-700 relative ${isImpactShaking ? 'animate-impact' : ''}`}>
-                    <div className={`shutter-overlay ${isShutterActive ? 'shutter-active' : ''}`} />
+                    {/* 新的幕布效果 */}
+                    <div className={`curtain-container ${isShutterActive ? 'curtain-active' : ''}`}>
+                        <div className="curtain-panel curtain-left"></div>
+                        <div className="curtain-panel curtain-right"></div>
+                        <div className="curtain-text">STAGE REBOOTING...</div>
+                    </div>
 
-                    <div className={`bg-stone-200 text-black px-4 py-2 font-black text-[10px] md:text-sm uppercase flex justify-between items-center shrink-0 border-b-[4px] border-stone-400 z-10 relative ${phase === 'NIGHT_SUMMARY' ? 'grayscale opacity-60' : ''}`}>
+                    <div className={`bg-stone-200 text-black px-4 py-2 font-black text-[0.7rem] md:text-[0.9rem] uppercase flex justify-between items-center shrink-0 border-b-[4px] border-stone-400 z-10 relative ${phase === 'NIGHT_SUMMARY' ? 'grayscale opacity-60' : ''}`}>
                         <span className="flex items-center gap-2"><Zap size={14} className="text-amber-600" /> 立即可行 (AVAILABLE)</span>
-                        <span className="opacity-80 text-[8px] md:text-[10px] bg-white px-2 py-0.5 border border-black/10">行动力: {actionPoints}/3</span>
+                        
+                        {/* 改进后的行动点展示 */}
+                        <div className="flex items-center gap-1.5 md:gap-2">
+                             <span className="text-[0.6rem] md:text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider mr-1">Energy</span>
+                             <div className="flex gap-1">
+                                 {[0, 1, 2].map(index => {
+                                     // 逻辑：
+                                     // isActive: 当前点数是否包含此索引
+                                     // isConsuming: 刚刚被消耗的索引
+                                     const isActive = index < actionPoints;
+                                     const isConsuming = index === consumingIndex;
+
+                                     return (
+                                         <div key={index} className="relative w-4 h-4 md:w-5 md:h-5 flex items-center justify-center">
+                                             {/* 空槽底色 */}
+                                             <Zap size={20} className="absolute text-stone-300 opacity-30 scale-90" strokeWidth={3} />
+                                             
+                                             {/* 激活状态图标 */}
+                                             <Zap 
+                                                 size={20} 
+                                                 className={`
+                                                     absolute transition-all duration-300 ease-out
+                                                     ${isActive ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}
+                                                     ${isActive ? 'text-amber-500 fill-amber-500 drop-shadow-[1px_1px_0px_rgba(0,0,0,0.5)]' : ''}
+                                                 `}
+                                                 strokeWidth={2.5}
+                                             />
+                                             
+                                             {/* 消耗动画效果 (比原来慢) */}
+                                             {isConsuming && (
+                                                <Zap 
+                                                    size={20}
+                                                    className="absolute text-rose-500 fill-rose-500 animate-[pulse_1s_ease-out_infinite] scale-110 drop-shadow-[0_0_4px_rgba(244,63,94,0.8)]"
+                                                    strokeWidth={2.5}
+                                                />
+                                             )}
+                                         </div>
+                                     );
+                                 })}
+                             </div>
+                        </div>
                     </div>
                     
                     <div className={`flex-1 overflow-y-auto p-2 md:p-4 no-scrollbar bg-stone-50/50 ${phase === 'NIGHT_SUMMARY' ? 'grayscale opacity-60 pointer-events-none' : ''}`}>
@@ -268,24 +366,25 @@ export const MainGame: React.FC<Props> = ({
                                         key={action.id}
                                         disabled={isTaken || phase !== 'ACTION_SELECTION' || actionPoints <= 0}
                                         onClick={() => { audioManager.playClick(); onSetEvent(action); onSetEventResult(null); }}
-                                        onMouseEnter={() => !isTaken && phase === 'ACTION_SELECTION' && actionPoints > 0 && audioManager.playHover()}
+                                        onMouseEnter={() => {
+                                            if (!isTaken && phase === 'ACTION_SELECTION' && actionPoints > 0) {
+                                                audioManager.playHover();
+                                            }
+                                        }}
                                         className={`
-                                            w-full p-2 border-[3px] md:border-4 flex flex-col items-start gap-1 text-left transition-all min-h-[85px] md:min-h-[105px] relative group
+                                            w-full p-2 border-[3px] md:border-4 flex flex-col justify-center gap-1 text-center transition-all min-h-[50px] md:min-h-[70px] relative group
                                             ${currentEvent?.id === action.id ? 'translate-x-1 translate-y-1 shadow-none border-black ring-2 ring-white bg-amber-50' : 'shadow-[3px_3px_0px_0px_black] md:shadow-[5px_5px_0px_0px_black] bg-white'}
                                             ${isTaken ? 'bg-stone-200 border-stone-400 opacity-40 grayscale' : `${actionTheme.border} ${isStageAction ? 'animate-bounce-subtle ring-4 ring-amber-400/30' : ''}`}
                                             poly-button
                                         `}
                                     >
-                                        <div className="flex items-center gap-2 w-full mb-1">
+                                        <div className="flex items-center justify-center gap-2 w-full">
                                             <div className={`p-1.5 border-2 border-black transition-colors ${isTaken ? 'bg-stone-400' : actionTheme.gridBg}`}>
                                                 {isTaken ? <Check size={12} className="text-white" /> : getActionIcon(action.id, action.type)}
                                             </div>
-                                            <div className={`font-black text-[9px] md:text-[12px] leading-none uppercase truncate flex-1 ${isStageAction ? 'text-amber-700' : ''}`}>
+                                            <div className={`font-black leading-none uppercase truncate flex-1 ${isStageAction ? 'text-amber-700' : ''} ${actionTitleClass}`}>
                                             {action.title}
                                             </div>
-                                        </div>
-                                        <div className="text-[7px] md:text-[9px] font-bold text-stone-500 leading-snug line-clamp-2 md:line-clamp-3 w-full border-t border-stone-100 pt-1">
-                                            {action.description}
                                         </div>
                                     </button>
                                 );
@@ -302,10 +401,10 @@ export const MainGame: React.FC<Props> = ({
                                         {currentNightThought ? (
                                             <div className="w-full max-w-2xl bg-stone-800 border-l-4 border-amber-500 p-3 md:p-4 shadow-lg text-left relative overflow-hidden">
                                                 <div className="absolute top-0 right-0 p-2 opacity-10"><MessageSquareQuote size={40} className="text-white"/></div>
-                                                <h3 className="text-xs md:text-sm font-black text-amber-500 uppercase tracking-widest mb-1 md:mb-2 flex items-center gap-2">
+                                                <h3 className={`font-black text-amber-500 uppercase tracking-widest mb-1 md:mb-2 flex items-center gap-2 ${nightTitleClass}`}>
                                                     <Zap size={12}/> {currentNightThought.title}
                                                 </h3>
-                                                <p className="text-xs md:text-base font-bold text-stone-300 italic leading-relaxed md:leading-relaxed">
+                                                <p className={`font-bold text-stone-300 italic leading-relaxed md:leading-relaxed ${nightDescClass}`}>
                                                     "{currentNightThought.content}"
                                                 </p>
                                             </div>
@@ -316,7 +415,7 @@ export const MainGame: React.FC<Props> = ({
 
                                 <div className="flex items-center justify-between gap-4 border-t border-stone-700 pt-2 md:pt-4">
                                     <div className="text-left">
-                                        <p className="text-stone-400 font-bold text-[8px] md:text-[10px] flex items-center gap-1"><AlertCircle size={10}/> 基础消耗：饱腹-15</p>
+                                        <p className="text-stone-400 font-bold text-[0.55rem] md:text-[0.7rem] flex items-center gap-1"><AlertCircle size={10}/> 基础消耗：饱腹-15</p>
                                     </div>
                                     <button 
                                         onClick={() => { audioManager.playClick(); if(day >= maxDays) onFinishGame(); else onStartDay(day + 1); }} 
@@ -345,13 +444,13 @@ export const MainGame: React.FC<Props> = ({
                             <div className="flex-1 flex flex-col h-full overflow-hidden">
                                 <div className={`flex items-center justify-between gap-2 bg-black/50 border-2 p-1.5 md:p-2 rounded shrink-0 h-auto min-h-[3rem] ${currentTheme.border}`}>
                                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                                        <p className={`flex-1 ${feedbackFontSize} font-black italic text-white leading-tight ${currentEvent.id === 'sudden_carrot_tissue' && !eventResult ? 'blur-[4px] hover:blur-none transition-all cursor-help' : ''}`}>
+                                        <p className={`flex-1 font-black italic text-white leading-tight ${footerTextClass} ${currentEvent.id === 'sudden_carrot_tissue' && !eventResult ? 'blur-[4px] hover:blur-none transition-all cursor-help' : ''}`}>
                                         {feedbackText}
                                         </p>
                                     </div>
                                     <div className="flex gap-1 shrink-0 ml-2">
                                         {eventResult?.changes && Object.entries(eventResult.changes).map(([k, v], i) => (
-                                        <span key={i} className={`text-[7px] md:text-[10px] font-black px-1.5 py-0.5 border-2 border-black bg-black shadow-[1px_1px_0px_0px_white] ${Number(v) > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                        <span key={i} className={`text-[0.5rem] md:text-[0.65rem] font-black px-1.5 py-0.5 border-2 border-black bg-black shadow-[1px_1px_0px_0px_white] ${Number(v) > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                                             {STAT_LABELS[k] || k}{Number(v) > 0 ? '+' : ''}{v}
                                         </span>
                                         ))}
@@ -376,11 +475,11 @@ export const MainGame: React.FC<Props> = ({
                                                     disabled={choice.condition ? !choice.condition(stats) : false}
                                                     onClick={() => { audioManager.playClick(); onChoice(choice); }}
                                                     onMouseEnter={() => (choice.condition ? choice.condition(stats) : true) && audioManager.playHover()}
-                                                    className={`flex-1 border-2 md:border-4 border-white bg-black/20 text-white font-black text-[10px] md:text-sm leading-none uppercase transition-all flex flex-col items-center justify-center disabled:opacity-30 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)] ${currentTheme.btn} hover:text-black active:translate-y-0.5 p-1`}
+                                                    className={`flex-1 border-2 md:border-4 border-white bg-black/20 text-white font-black leading-none uppercase transition-all flex flex-col items-center justify-center disabled:opacity-30 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)] ${currentTheme.btn} hover:text-black active:translate-y-0.5 p-1 ${choiceTextClass}`}
                                                 >
                                                     <span className="px-1">{choice.text}</span>
                                                     {chance !== null && (
-                                                        <span className={`text-[8px] md:text-[10px] font-black mt-1 ${getChanceColor(chance)}`}>
+                                                        <span className={`text-[0.5rem] md:text-[0.6rem] font-black mt-1 ${getChanceColor(chance)}`}>
                                                         胜算:{chance}%
                                                         </span>
                                                     )}
@@ -411,15 +510,15 @@ export const MainGame: React.FC<Props> = ({
                     <div className="p-6">
                     {!eventResult ? (
                         <>
-                        <h2 className="text-2xl md:text-4xl font-black mb-4 uppercase leading-none italic">{currentEvent.title}</h2>
-                        <p className="text-sm md:text-base font-bold text-stone-600 mb-8 border-l-4 border-stone-200 pl-4 py-2 bg-stone-50 leading-relaxed">{currentEvent.description}</p>
+                        <h2 className={`font-black mb-4 uppercase leading-none italic ${titleTextClass}`}>{currentEvent.title}</h2>
+                        <p className={`font-bold text-stone-600 mb-8 border-l-4 border-stone-200 pl-4 py-2 bg-stone-50 leading-relaxed ${descTextClass}`}>{currentEvent.description}</p>
                         <div className="space-y-3">
                             {currentEvent.choices.map(choice => (
                             <button 
                                 key={choice.id}
                                 onClick={() => { audioManager.playClick(); onChoice(choice); }}
                                 onMouseEnter={() => audioManager.playHover()}
-                                className="w-full p-4 bg-white border-[4px] border-black text-left font-black text-sm md:text-lg hover:bg-amber-100 transition-colors shadow-[4px_4px_0px_0px_black] active:translate-y-1 flex justify-between items-center group"
+                                className={`w-full p-4 bg-white border-[4px] border-black text-left font-black hover:bg-amber-100 transition-colors shadow-[4px_4px_0px_0px_black] active:translate-y-1 flex justify-between items-center group ${choiceTextClass}`}
                             >
                                 {choice.text}
                                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />

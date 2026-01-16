@@ -96,6 +96,10 @@ class AudioManager {
   }
 
   public playHover() {
+      // 暂时禁用 Hover 音效
+      return; 
+      
+      /*
       // 降低 Hover 音效的音量，避免过于吵闹
       if (this._isMuted) return;
       const url = AUDIO_ASSETS.sfx['hover'];
@@ -103,6 +107,7 @@ class AudioManager {
       const audio = new Audio(url);
       audio.volume = 0.3; 
       audio.play().catch(() => {});
+      */
   }
 
   public toggleMute() {
