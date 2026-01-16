@@ -30,7 +30,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                     '你在睡梦中翻了个身，不小心掉进了旁边的水坑里，浑身湿透。',
                     '有一只讨厌的蚊子一直绕着你的耳朵转，这觉睡得异常痛苦。'
                 ]);
-                return { changes: { health: -5, satiety: -5 }, message: failMsg, success: false, effectType: 'damage' };
+                return { changes: { health: -5, satiety: -5 }, message: failMsg, success: false, effectType: 'damage', sound: 'fail' };
             }
         },
         {
@@ -96,14 +96,14 @@ export const DAILY_ACTIONS: GameEvent[] = [
                         '你模仿人类点头打招呼，成功骗到了不少关注。社交能力+1。',
                         '你学会了如何用无辜的眼神看着自动门，它居然为你打开了！'
                     ]);
-                    return { changes: { smarts: 3, satiety: 5 }, message: msg, success: true, effectType: 'heal' };
+                    return { changes: { smarts: 3, satiety: 5 }, message: msg, success: true, effectType: 'heal', sound: 'meow' };
                 }
                 const failMsg = pick([
                     '你试图学人类走路，结果在大庭广众之下摔了个狗吃屎。太丢猫了！',
                     '模仿失败，看起来像是在发疯。路人纷纷避开你，还说这猫是不是病了。',
                     '你的腿太短了，无论怎么模仿看起来都只是一只在打滚的圆头猫。'
                 ]);
-                return { changes: { smarts: -2, hissing: -5 }, message: failMsg, success: false, effectType: 'neutral' };
+                return { changes: { smarts: -2, hissing: -5 }, message: failMsg, success: false, effectType: 'neutral', sound: 'fail' };
             }
         }
     ]
@@ -182,7 +182,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                         '你弓起脊背，感受到了血液中的野性在苏醒。',
                         '你的眼神变得犀利。现在的你，不再是那个只会被驱赶的弱者。'
                     ]);
-                    return { changes: { hissing: 5, smarts: 2, satiety: -5 }, message: msg, success: true, effectType: 'neutral' };
+                    return { changes: { hissing: 5, smarts: 2, satiety: -5 }, message: msg, success: true, effectType: 'neutral', sound: 'hiss' };
                 }
                 const failMsg = pick([
                     '你用力过猛，差点把自己呛到。老猫的嗓子果然还是太脆了。',
@@ -203,14 +203,14 @@ export const DAILY_ACTIONS: GameEvent[] = [
                         '通过与虚空斗智斗勇，你掌握了更好的发力技巧。',
                         '你甚至在墙上抓出了三道深深的痕迹。'
                     ]);
-                    return { changes: { hissing: 4, smarts: 4, satiety: -5 }, message: msg, success: true, effectType: 'neutral' };
+                    return { changes: { hissing: 4, smarts: 4, satiety: -5 }, message: msg, success: true, effectType: 'neutral', sound: 'hiss' };
                 }
                 const failMsg = pick([
                     '你被自己的影子吓了一跳，狼狈地跳进了水沟。',
                     '头太圆了，转弯时由于重心不稳摔了个底朝天。',
                     '还没开打就累得气喘吁吁。'
                 ]);
-                return { changes: { health: -2, satiety: -5 }, message: failMsg, success: false, effectType: 'damage' };
+                return { changes: { health: -2, satiety: -5 }, message: failMsg, success: false, effectType: 'damage', sound: 'fail' };
             }
         }
     ]
@@ -242,7 +242,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                     '你掉进了一个充满腐烂液体的袋子里。恶心死了。',
                     '你翻到了某种化学试剂。现在你感觉头晕眼花。'
                 ]);
-                return { changes: { satiety: 0, health: -15 }, message: failMsg, success: false, effectType: 'damage' };
+                return { changes: { satiety: 0, health: -15 }, message: failMsg, success: false, effectType: 'damage', sound: 'impact' };
             }
         },
         {
@@ -284,14 +284,14 @@ export const DAILY_ACTIONS: GameEvent[] = [
                         '一场教科书般的追逐战。你按住了老鼠的尾巴。',
                         '虽然撞翻了垃圾桶，但猎物到手了。蛋白质是无辜的。'
                     ]);
-                    return { changes: { satiety: 14, hissing: 4, health: -5 }, message: msg, success: true, effectType: 'neutral' };
+                    return { changes: { satiety: 14, hissing: 4, health: -5 }, message: msg, success: true, effectType: 'neutral', sound: 'impact' };
                 }
                 const failMsg = pick([
                     '它钻进了洞里，你一头撞在了墙上。',
                     '你滑倒了。老鼠回头嘲笑你，甚至还在你面前梳理胡须。',
                     '体力不支。你眼睁睁看着它溜走，只抓到了一嘴灰。'
                 ]);
-                return { changes: { satiety: -5, health: -10 }, message: failMsg, success: false, effectType: 'damage' };
+                return { changes: { satiety: -5, health: -10 }, message: failMsg, success: false, effectType: 'damage', sound: 'fail' };
             }
         },
         {
@@ -305,7 +305,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                          '耐心的猎人总有回报。你几乎没费力气就抓到了它。',
                          '你预判了它的预判。在洞口守株待兔成功。'
                      ]);
-                     return { changes: { satiety: 10, hissing: 3 }, message: msg, success: true, effectType: 'neutral' };
+                     return { changes: { satiety: 10, hissing: 3 }, message: msg, success: true, effectType: 'neutral', sound: 'impact' };
                  }
                  const failMsg = pick([
                      '你蹲到腿都麻了，老鼠根本没出来。浪费时间。',
@@ -331,7 +331,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
             text: '极限跑酷',
             calculateChance: (stats) => Math.min(85, 30 + stats.health * 0.6),
             effect: (stats) => {
-                if (stats.health < 30) return { changes: { health: -15 }, message: '你的老骨头承受不住这种强度，摔得很惨。', success: false, effectType: 'damage' };
+                if (stats.health < 30) return { changes: { health: -15 }, message: '你的老骨头承受不住这种强度，摔得很惨。', success: false, effectType: 'damage', sound: 'impact' };
                 if (roll(30 + stats.health * 0.6)) {
                     const msg = pick([
                         '你在围墙间飞跃，感觉自己像一只飞鼠！',
@@ -345,7 +345,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                     '爪子没抓稳，从墙头滑落，掉进了泥坑。',
                     '跳跃途中被一只鸟吓了一跳，落地姿势很难看。'
                 ]);
-                return { changes: { health: -5, satiety: -5 }, message: failMsg, success: false, effectType: 'damage' };
+                return { changes: { health: -5, satiety: -5 }, message: failMsg, success: false, effectType: 'damage', sound: 'impact' };
             }
         },
         {
@@ -391,14 +391,14 @@ export const DAILY_ACTIONS: GameEvent[] = [
                         '你成功把毛蹭到了路人的黑裤子上，作为交换，他给了你半个汉堡。',
                         '一位老奶奶觉得你太可怜了，特意去便利店给你买了罐头。'
                     ]);
-                    return { changes: { satiety: 12, hissing: -5 }, message: msg, success: true, effectType: 'heal' };
+                    return { changes: { satiety: 12, hissing: -5 }, message: msg, success: true, effectType: 'heal', sound: 'meow' };
                 }
                 const failMsg = pick([
                     '“走开！”路人嫌你脏，踢了你一脚。',
                     '这人对猫毛过敏，打着喷嚏把你推开了。',
                     '你蹭错人了，那是一只刚遛完弯的大金毛。'
                 ]);
-                return { changes: { health: -5, hissing: 3 }, message: failMsg, success: false, effectType: 'damage' };
+                return { changes: { health: -5, hissing: 3 }, message: failMsg, success: false, effectType: 'damage', sound: 'fail' };
             }
         },
         {
@@ -412,7 +412,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                         '虽然没人停下来，但你在垃圾桶旁捡到了路人掉落的饼干。',
                         '保持距离让你感到安全，虽然收获不多。'
                     ]);
-                    return { changes: { satiety: 6, hissing: -2 }, message: msg, success: true, effectType: 'heal' };
+                    return { changes: { satiety: 6, hissing: -2 }, message: msg, success: true, effectType: 'heal', sound: 'meow' };
                 }
                 const failMsg = pick([
                     '你叫破了喉咙也没人理你。',
@@ -444,14 +444,14 @@ export const DAILY_ACTIONS: GameEvent[] = [
                         '一阵猫毛乱飞，你骑在它身上取得了胜利。',
                         '你咬住了它的耳朵，它惨叫着逃窜。你也受了点皮外伤。'
                     ]);
-                    return { changes: { hissing: 5, health: -5 }, message: msg, success: true, effectType: 'damage' };
+                    return { changes: { hissing: 5, health: -5 }, message: msg, success: true, effectType: 'damage', sound: 'impact' };
                 }
                 const failMsg = pick([
                     '你被打得落荒而逃。耻辱！',
                     '对方比你年轻力壮，你被按在地上摩擦。',
                     '你高估了自己的牙口，咬到了石头。'
                 ]);
-                return { changes: { health: -15, hissing: -5 }, message: failMsg, success: false, effectType: 'damage' };
+                return { changes: { health: -15, hissing: -5 }, message: failMsg, success: false, effectType: 'damage', sound: 'impact' };
             }
         },
         {
@@ -465,14 +465,14 @@ export const DAILY_ACTIONS: GameEvent[] = [
                         '你炸毛的样子像个海胆，成功吓退了对手。',
                         '眼神杀。对方感受到了你的杀气，识趣地走开了。'
                     ]);
-                    return { changes: { hissing: 3 }, message: msg, success: true, effectType: 'neutral' };
+                    return { changes: { hissing: 3 }, message: msg, success: true, effectType: 'neutral', sound: 'hiss' };
                 }
                 const failMsg = pick([
                     '它根本不怕你，反而冲上来咬了你一口。',
                     '你的吼声破音了，对方发出了嘲笑。',
                     '虚张声势被识破，你不得不狼狈逃跑。'
                 ]);
-                return { changes: { hissing: -5, health: -2 }, message: failMsg, success: false, effectType: 'damage' };
+                return { changes: { hissing: -5, health: -2 }, message: failMsg, success: false, effectType: 'damage', sound: 'fail' };
             }
         }
     ]
@@ -499,14 +499,14 @@ export const DAILY_ACTIONS: GameEvent[] = [
                           '你抢了一只胖橘的晚餐。它敢怒不敢言。',
                           '暴力是唯一的语言。你吃得很饱。'
                       ]);
-                      return { changes: { satiety: 15, hissing: 5, smarts: -2 }, message: msg, success: true, effectType: 'neutral' };
+                      return { changes: { satiety: 15, hissing: 5, smarts: -2 }, message: msg, success: true, effectType: 'neutral', sound: 'hiss' };
                   }
                   const failMsg = pick([
                       '遇到个愣头青，虽然打赢了，但你也挂了彩。',
                       '这只猫宁死不从，抓伤了你的鼻子。',
                       '你被一群猫围攻了。双拳难敌四手。'
                   ]);
-                  return { changes: { hissing: -5, health: -10 }, message: failMsg, success: false, effectType: 'damage' };
+                  return { changes: { hissing: -5, health: -10 }, message: failMsg, success: false, effectType: 'damage', sound: 'impact' };
               }
           },
           {
@@ -520,7 +520,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                           '你帮它们赶走了大黄狗，它们感激地送上了鱼骨头。',
                           '公平交易。你维持了秩序，也填饱了肚子。'
                       ]);
-                      return { changes: { hissing: -2, smarts: 4, satiety: 8 }, message: msg, success: true, effectType: 'heal' };
+                      return { changes: { hissing: -2, smarts: 4, satiety: 8 }, message: msg, success: true, effectType: 'heal', sound: 'meow' };
                   }
                   const failMsg = pick([
                       '这群小猫即使被保护也不交保护费，白干一场。',
@@ -605,7 +605,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                           '这片街区充满了你的气味。外来者不敢造次。',
                           '你在这个过程中顺便赶走了一只流浪狗。'
                       ]);
-                      return { changes: { hissing: 4, satiety: -5, health: 2 }, message: msg, success: true, effectType: 'neutral' };
+                      return { changes: { hissing: 4, satiety: -5, health: 2 }, message: msg, success: true, effectType: 'neutral', sound: 'hiss' };
                   }
                   const failMsg = pick([
                       '你尿不出来...太尴尬了。',
@@ -680,7 +680,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                           '你埋了那碗普通的猫粮。人类明白了你的意思。',
                           '你对着空碗哈气，直到人类端来了和牛。'
                       ]);
-                      return { changes: { satiety: 35, hissing: 5, smarts: -2 }, message: msg, success: true, effectType: 'neutral' };
+                      return { changes: { satiety: 35, hissing: 5, smarts: -2 }, message: msg, success: true, effectType: 'neutral', sound: 'hiss' };
                   }
                   const failMsg = pick([
                       '人类今天心情不好，把碗收走了。你什么也没吃到。',
@@ -712,7 +712,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                           '你把窗帘抓成了流苏款。很有设计感。',
                           '地毯被你挠出了一个洞，你把它当成了高尔夫球洞。'
                       ]);
-                      return { changes: { hissing: 5, satiety: -5, health: -2 }, message: msg, success: true, effectType: 'neutral' };
+                      return { changes: { hissing: 5, satiety: -5, health: -2 }, message: msg, success: true, effectType: 'neutral', sound: 'impact' };
                   }
                   const failMsg = pick([
                       '你被发现了，不得不中断创作。',
@@ -765,14 +765,14 @@ export const DAILY_ACTIONS: GameEvent[] = [
                           '你化作一道残影，铲屎官以为家里闹鬼了。',
                           '漂移过弯！你打破了自己的最快圈速纪录。'
                       ]);
-                      return { changes: { health: 5, satiety: -10, hissing: 4 }, message: msg, success: true, effectType: 'neutral' };
+                      return { changes: { health: 5, satiety: -10, hissing: 4 }, message: msg, success: true, effectType: 'neutral', sound: 'impact' };
                   }
                   const failMsg = pick([
                       '你在转弯时打滑，撞到了门框。痛。',
                       '刹车失灵，你一头扎进了垃圾桶。',
                       '跑得太快，你在光滑的地板上劈了个叉。'
                   ]);
-                  return { changes: { health: -5, satiety: -5 }, message: failMsg, success: false, effectType: 'damage' };
+                  return { changes: { health: -5, satiety: -5 }, message: failMsg, success: false, effectType: 'damage', sound: 'impact' };
               }
           },
           {
@@ -786,14 +786,14 @@ export const DAILY_ACTIONS: GameEvent[] = [
                           '你把吊灯当成了秋千。这就是从天而降的掌法。',
                           '你在书架之间来回跳跃，就像在丛林里一样。'
                       ]);
-                      return { changes: { health: 6, satiety: -10, smarts: 2 }, message: msg, success: true, effectType: 'neutral' };
+                      return { changes: { health: 6, satiety: -10, smarts: 2 }, message: msg, success: true, effectType: 'neutral', sound: 'impact' };
                   }
                   const failMsg = pick([
                       '你错估了距离，从柜子上掉了下来。',
                       '你踩翻了花瓶。随着一声脆响，你的心也碎了。',
                       '起跳失败，你挂在了窗帘上，像个咸鱼。'
                   ]);
-                  return { changes: { health: -10, satiety: -5 }, message: failMsg, success: false, effectType: 'damage' };
+                  return { changes: { health: -10, satiety: -5 }, message: failMsg, success: false, effectType: 'damage', sound: 'impact' };
               }
           }
       ]
@@ -839,7 +839,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                           '咔咔咔...你的牙齿在打颤，这是本能的呼唤。',
                           '虽然隔着玻璃，但你的气势已经杀死了那只鸟。'
                       ]);
-                      return { changes: { hissing: 2, satiety: -2 }, message: msg, success: true, effectType: 'neutral' };
+                      return { changes: { hissing: 2, satiety: -2 }, message: msg, success: true, effectType: 'neutral', sound: 'hiss' };
                   }
                   const failMsg = pick([
                       '你叫得太大声，把鸟吓跑了。',
@@ -878,7 +878,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                       '红点跑到了天花板上，你急得在下面打转。',
                       '你扑向红点，结果扑到了铲屎官的脚。'
                   ]);
-                  return { changes: { health: -2, satiety: -5, hissing: 2 }, message: failMsg, success: false, effectType: 'damage' };
+                  return { changes: { health: -2, satiety: -5, hissing: 2 }, message: failMsg, success: false, effectType: 'damage', sound: 'impact' };
               }
           },
           {
@@ -979,7 +979,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                           '你喵喵叫了十分钟，被翻译成“我们要爱护地球”。',
                           '你说你想吃罐头，粉丝却理解为你对资本主义的批判。'
                       ]);
-                      return { changes: { smarts: 4, hissing: -2 }, message: msg, success: true, effectType: 'neutral' };
+                      return { changes: { smarts: 4, hissing: -2 }, message: msg, success: true, effectType: 'neutral', sound: 'meow' };
                   }
                   const failMsg = pick([
                       '你忘了开麦克风，演了半天默剧。',
@@ -1053,7 +1053,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                            '你轻轻碰了碰粉丝的手，对方激动得晕了过去。',
                            '营业式假笑 + 击掌。专业的偶像。'
                        ]);
-                       return { changes: { smarts: 4, hissing: -2 }, message: msg, success: true, effectType: 'neutral' };
+                       return { changes: { smarts: 4, hissing: -2 }, message: msg, success: true, effectType: 'neutral', sound: 'meow' };
                    }
                    const failMsg = pick([
                        '你抓伤了一个粉丝的手。好在对方没介意。',
@@ -1085,14 +1085,14 @@ export const DAILY_ACTIONS: GameEvent[] = [
                           '你穿上了小西装，看起来像个猫届CEO。',
                           '虽然帽子有点紧，但你为了艺术忍了。'
                       ]);
-                      return { changes: { satiety: 15, smarts: 2 }, message: msg, success: true, effectType: 'neutral' };
+                      return { changes: { satiety: 15, smarts: 2 }, message: msg, success: true, effectType: 'neutral', sound: 'shutter' };
                   }
                   const failMsg = pick([
                       '你撕碎了衣服。我不做猫了！',
                       '你死活不肯戴那个蝴蝶结，拍摄被迫取消。',
                       '你在镜头前露出了一脸嫌弃，摄影师很难办。'
                   ]);
-                  return { changes: { hissing: 5 }, message: failMsg, success: false, effectType: 'damage' };
+                  return { changes: { hissing: 5 }, message: failMsg, success: false, effectType: 'damage', sound: 'hiss' };
               }
           },
           {
@@ -1159,14 +1159,14 @@ export const DAILY_ACTIONS: GameEvent[] = [
                            '你对着那个充满廉价塑料味的玩具打呼噜。演技派。',
                            '商家加钱了。你立刻表示这是你用过最好的产品。'
                        ]);
-                       return { changes: { satiety: 15, smarts: -2, hissing: -5 }, message: msg, success: true, effectType: 'heal' };
+                       return { changes: { satiety: 15, smarts: -2, hissing: -5 }, message: msg, success: true, effectType: 'heal', sound: 'meow' };
                    }
                    const failMsg = pick([
                        '你演得太假了，粉丝看出来你在恰烂钱。',
                        '你刚夸完，玩具就坏了。直播翻车。',
                        '你的良心（如果有的话）痛了一下。'
                    ]);
-                   return { changes: { smarts: -4, hissing: 4 }, message: failMsg, success: false, effectType: 'neutral' };
+                   return { changes: { smarts: -4, hissing: 4 }, message: failMsg, success: false, effectType: 'neutral', sound: 'fail' };
               }
           }
       ]
@@ -1198,7 +1198,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                       '隔壁小花猫发声明打脸，说不认识你。',
                       '大家觉得你们不般配，说你老牛吃嫩草。'
                   ]);
-                  return { changes: { hissing: 5 }, message: failMsg, success: false, effectType: 'damage' };
+                  return { changes: { hissing: 5 }, message: failMsg, success: false, effectType: 'damage', sound: 'hiss' };
               }
           },
           {
@@ -1244,14 +1244,14 @@ export const DAILY_ACTIONS: GameEvent[] = [
                           '你感人的演讲（虽然只是叫了两声）筹集了大量猫粮。',
                           '你探望了以前的流浪兄弟，不忘初心。'
                       ]);
-                      return { changes: { smarts: 5, hissing: -4 }, message: msg, success: true, effectType: 'neutral' };
+                      return { changes: { smarts: 5, hissing: -4 }, message: msg, success: true, effectType: 'neutral', sound: 'meow' };
                   }
                   const failMsg = pick([
                       '活动太无聊，你在台上睡着了。',
                       '你被闪光灯吓到了，当场炸毛。',
                       '你不想去，但被强行抱去，全程黑脸。'
                   ]);
-                  return { changes: { hissing: 4 }, message: failMsg, success: false, effectType: 'neutral' };
+                  return { changes: { hissing: 4 }, message: failMsg, success: false, effectType: 'neutral', sound: 'hiss' };
               }
           },
           {

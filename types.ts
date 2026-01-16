@@ -30,14 +30,15 @@ export interface Choice {
     success: boolean;
     effectType?: 'damage' | 'heal' | 'sleep' | 'neutral'; 
     stageUnlock?: GameStage;
-    retry?: boolean; // 新增：若为true，则移除该选项并允许重选，不进入结算界面
+    retry?: boolean; 
+    sound?: string; // 新增：指定该选项触发的特定音效 (对应 audio_assets 中的 key)
   };
   condition?: (stats: GameStats) => boolean; 
 }
 
 export interface GameEvent {
   id: string;
-  chainId?: string; // 新增：用于标识同系列任务
+  chainId?: string; 
   title: string;
   description: string;
   image?: string;
@@ -47,7 +48,6 @@ export interface GameEvent {
   hints?: { stat: string; change: 'up' | 'down' }[];
   allowedStages?: GameStage[];
   excludedStages?: GameStage[];
-  // 扩展解锁条件参数，支持查看事件完成日期
   unlockCondition?: (day: number, stats: GameStats, completed: string[], history: string[], completedAt: Record<string, number>) => { unlocked: boolean; reason?: string };
   autoTriggerCondition?: (day: number, stats: GameStats, stage: GameStage) => boolean;
 }

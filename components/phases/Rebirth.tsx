@@ -2,6 +2,7 @@
 import React from 'react';
 import { Feather, Fingerprint } from 'lucide-react';
 import { Character } from '../../types';
+import { audioManager } from '../../utils/audio';
 
 interface Props {
     character: Character;
@@ -51,7 +52,7 @@ export const Rebirth: React.FC<Props> = ({ character, onSign }) => {
                 </div>
 
                 <button 
-                    onClick={onSign}
+                    onClick={() => { audioManager.playClick(); onSign(); }}
                     className="w-full py-4 bg-rose-600 text-white font-black text-xl border-4 border-black hover:bg-rose-500 shadow-[4px_4px_0px_0px_black] active:translate-y-1 flex items-center justify-center gap-2"
                 >
                     <Feather size={20} /> 签字并重生

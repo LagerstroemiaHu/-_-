@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { EndingType } from '../../types';
+import { audioManager } from '../../utils/audio';
 
 interface Props {
     ending: EndingType | null;
@@ -24,8 +25,18 @@ export const EndGame: React.FC<Props> = ({ ending, isVictory, onReset, onGallery
                      '命运的轮盘停止了转动。'}
                 </p>
                 <div className="flex flex-col gap-3">
-                    <button onClick={onReset} className="w-full py-4 bg-black text-white font-black text-lg md:text-2xl border-4 border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] hover:bg-amber-500 transition-colors uppercase">再次轮回</button>
-                    <button onClick={onGallery} className="w-full py-2 bg-white border-4 border-black font-black text-sm uppercase">查看成就</button>
+                    <button 
+                        onClick={() => { audioManager.playClick(); onReset(); }}
+                        className="w-full py-4 bg-black text-white font-black text-lg md:text-2xl border-4 border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] hover:bg-amber-500 transition-colors uppercase"
+                    >
+                        再次轮回
+                    </button>
+                    <button 
+                        onClick={() => { audioManager.playClick(); onGallery(); }}
+                        className="w-full py-2 bg-white border-4 border-black font-black text-sm uppercase"
+                    >
+                        查看成就
+                    </button>
                 </div>
             </div>
         </div>

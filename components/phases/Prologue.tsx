@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Snowflake, ArrowRight } from 'lucide-react';
+import { audioManager } from '../../utils/audio';
 
 type PrologueStepId = 'INTRO' | 'CHOICE_SHELF' | 'BATTLE_START' | 'BATTLE_END' | 'EXILE' | 'DEATH';
 
@@ -51,6 +52,10 @@ export const Prologue: React.FC<Props> = ({ onComplete }) => {
     };
 
     const handleChoice = (next: PrologueStepId) => {
+        if (next === 'BATTLE_END') audioManager.playSfx('impact');
+        else if (next === 'DEATH') audioManager.playSfx('heartbeat');
+        else audioManager.playClick();
+
         if (stepId === 'DEATH') {
             onComplete();
         } else {

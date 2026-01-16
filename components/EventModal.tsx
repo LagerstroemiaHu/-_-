@@ -2,6 +2,7 @@
 import React from 'react';
 import { GameEvent, Choice, GameStats, StatType } from '../types';
 import { X, ArrowRight, Skull, CheckCircle2, Heart, Fish, Zap, Brain, AlertTriangle, Compass } from 'lucide-react';
+import { audioManager } from '../utils/audio';
 
 interface Props {
   event: GameEvent;
@@ -50,6 +51,7 @@ const EventModal: React.FC<Props> = ({ event, stats, onChoice, result, onContinu
         {!result && !isAutoEvent && (
             <button 
                 onClick={onClose}
+                onMouseEnter={() => audioManager.playHover()}
                 className="absolute top-3 right-3 z-20 p-1.5 bg-white border-2 border-black hover:bg-stone-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-1"
             >
                 <X size={18} strokeWidth={3} />
@@ -92,7 +94,7 @@ const EventModal: React.FC<Props> = ({ event, stats, onChoice, result, onContinu
                   )}
                </div>
 
-               <button onClick={onContinue} className="w-full py-3 bg-stone-900 text-white font-black text-lg border-2 border-transparent hover:bg-stone-800 flex items-center justify-center gap-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] active:translate-y-1">继续冒险 <ArrowRight size={18} strokeWidth={3} /></button>
+               <button onClick={onContinue} onMouseEnter={() => audioManager.playHover()} className="w-full py-3 bg-stone-900 text-white font-black text-lg border-2 border-transparent hover:bg-stone-800 flex items-center justify-center gap-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] active:translate-y-1">继续冒险 <ArrowRight size={18} strokeWidth={3} /></button>
             </div>
           ) : (
             <>
@@ -104,7 +106,7 @@ const EventModal: React.FC<Props> = ({ event, stats, onChoice, result, onContinu
                   const available = choice.condition ? choice.condition(stats) : true;
                   const chance = choice.calculateChance ? Math.floor(choice.calculateChance(stats)) : null;
                   return (
-                    <button key={choice.id} disabled={!available} onClick={() => onChoice(choice)} className={`w-full p-3 text-left border-4 transition-all group relative poly-button flex flex-col gap-0.5 ${available ? 'border-black bg-white text-black hover:bg-amber-100 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' : 'border-stone-300 bg-stone-100 text-stone-400 cursor-not-allowed grayscale'}`}>
+                    <button key={choice.id} disabled={!available} onClick={() => onChoice(choice)} onMouseEnter={() => available && audioManager.playHover()} className={`w-full p-3 text-left border-4 transition-all group relative poly-button flex flex-col gap-0.5 ${available ? 'border-black bg-white text-black hover:bg-amber-100 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' : 'border-stone-300 bg-stone-100 text-stone-400 cursor-not-allowed grayscale'}`}>
                       <div className="flex justify-between items-center relative z-10 w-full">
                         <span className="font-black text-sm sm:text-base">{choice.text}</span>
                         {chance !== null && available && <span className="text-[10px] font-black px-1.5 py-0.5 border-2 border-black bg-emerald-400 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">{chance}%</span>}

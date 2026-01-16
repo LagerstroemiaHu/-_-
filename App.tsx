@@ -10,7 +10,8 @@ import { CharacterSelect } from './components/phases/CharacterSelect';
 import { MainGame } from './components/phases/MainGame';
 import { EndGame } from './components/phases/EndGame';
 import { pick } from './data/utils';
-import { X, Menu, FileDown, FileUp, Play, Trophy, Home, RefreshCw, Clock, Trash2 } from 'lucide-react';
+import { audioManager } from './utils/audio';
+import { X, Menu, FileDown, FileUp, Play, Trophy, Home, RefreshCw, Clock, Trash2, Type } from 'lucide-react';
 
 const MAX_DAYS = 15;
 
@@ -68,6 +69,12 @@ export default function App() {
   const [isImpactShaking, setIsImpactShaking] = useState(false);
   const [isFlashActive, setIsFlashActive] = useState(false);
   
+  // Font Size State (Percentage: 100 = default)
+  const [fontScale, setFontScale] = useState(() => {
+    const saved = localStorage.getItem('cat_font_scale');
+    return saved ? parseInt(saved) : 100;
+  });
+
   // Night Thought State
   const [currentNightThought, setCurrentNightThought] = useState<NightThought | null>(null);
   const [seenNightThoughtIds, setSeenNightThoughtIds] = useState<string[]>([]);
@@ -84,6 +91,36 @@ export default function App() {
     return saved ? JSON.parse(saved) : [];
   });
   const [viewGallery, setViewGallery] = useState(false);
+
+  // --- Font Scale Effect ---
+  useEffect(() => {
+    // Tailwind uses rems (relative to root font size).
+    // Default browser font-size is usually 16px.
+    // Setting percentage scales everything nicely.
+    document.documentElement.style.fontSize = `${fontScale}%`;
+    localStorage.setItem('cat_font_scale', fontScale.toString());
+  }, [fontScale]);
+
+  // --- Audio Management Effect ---
+  useEffect(() => {
+    if (phase === 'START') {
+        audioManager.playBgm('title');
+    } else if (phase === 'PROLOGUE') {
+        audioManager.playBgm('prologue');
+    } else if (phase === 'GAME_OVER' || phase === 'VICTORY') {
+        audioManager.playBgm('ending');
+    } else if (phase === 'REBIRTH' || phase === 'CHARACTER_SELECT') {
+         // Keep previous or play title
+         audioManager.playBgm('title');
+    } else {
+        // Main Game Loop: Grouped BGM Logic
+        if (stage === 'STRAY' || stage === 'CAT_LORD') {
+             audioManager.playBgm('stray');
+        } else if (stage === 'MANSION' || stage === 'CELEBRITY') {
+             audioManager.playBgm('mansion');
+        }
+    }
+  }, [phase, stage]);
 
   // --- Auto Save Effect ---
   useEffect(() => {
@@ -171,6 +208,7 @@ export default function App() {
     };
     localStorage.setItem(getSaveSlotKey(slotId), JSON.stringify(saveData));
     addLog(`游戏已保存至存档 ${slotId}`, 'success');
+    audioManager.playSfx('success');
     setIsMenuOpen(false);
   };
 
@@ -190,6 +228,7 @@ export default function App() {
       setSeenNightThoughtIds(data.seenNightThoughtIds || []);
       
       setPhase('ACTION_SELECTION');
+      audioManager.playSfx('page_flip');
       setIsMenuOpen(false);
   };
 
@@ -206,6 +245,9 @@ export default function App() {
   };
 
   const continueLatestGame = () => {
+       audioManager.init(); // Initialize audio context
+       audioManager.playClick();
+       
        const slots = getSaveSlotsMetadata();
        const manualSaves = slots.filter(s => !s.isEmpty);
        let latestSave: { data: SaveData, timestamp: number } | null = null;
@@ -241,6 +283,7 @@ export default function App() {
   };
 
   const returnToTitle = () => {
+      audioManager.playClick();
       if (character) {
           const saveData: SaveData = {
               day, stats, stage, completedEventIds, completedAt, history, 
@@ -259,6 +302,7 @@ export default function App() {
   const deleteSaveSlot = (slotId: number) => {
       if (confirm('确定要删除这个存档吗？此操作不可逆。')) {
           localStorage.removeItem(getSaveSlotKey(slotId));
+          audioManager.playSfx('fail');
           setMenuTab('main'); 
           setTimeout(() => setMenuTab('save'), 0);
       }
@@ -266,6 +310,9 @@ export default function App() {
 
   // --- START GAME LOGIC ---
   const handleStartGame = () => {
+      audioManager.init(); // Initialize audio context
+      audioManager.playClick();
+      
       const hasSeenPrologue = localStorage.getItem('cat_prologue_seen') === 'true';
       if (!hasSeenPrologue) {
           setPhase('PROLOGUE');
@@ -275,6 +322,7 @@ export default function App() {
   };
   
   const handleRebirthSign = () => {
+      audioManager.playSfx('page_flip');
       setCharacter(CHARACTERS[0]); 
       startDay(1);
   };
@@ -301,6 +349,7 @@ export default function App() {
       setEventResult(null);
       setPhase('MORNING_EVENT');
       addLog(`晨间际遇：${randomEvt.title}`, 'info');
+      audioManager.playSfx('page_flip');
     } else {
       setPhase('ACTION_SELECTION');
       setCurrentEvent(null);
@@ -314,8 +363,22 @@ export default function App() {
       if (currentEvent.type === 'DAILY') setDailyActionsTaken(prev => [...prev, currentEvent.id]);
     }
 
-    const { changes, message, success, effectType, stageUnlock, retry } = choice.effect(stats);
+    const { changes, message, success, effectType, stageUnlock, retry, sound } = choice.effect(stats);
     updateStats(changes);
+    
+    // Play sound based on result or custom sound
+    if (sound) {
+        audioManager.playSfx(sound as any);
+    } else {
+        if (success) {
+            if (stageUnlock) audioManager.playSfx('shutter');
+            else if (effectType === 'heal' || effectType === 'sleep') audioManager.playSfx('success');
+            else audioManager.playSfx('click');
+        } else {
+            if (effectType === 'damage') audioManager.playSfx('fail');
+            else audioManager.playSfx('click');
+        }
+    }
     
     if (retry && currentEvent) {
         setCurrentEvent(prev => prev ? ({
@@ -351,6 +414,7 @@ export default function App() {
         setTimeout(() => {
             setIsFlashActive(true);
             setIsImpactShaking(true);
+            audioManager.playSfx('impact');
             setTimeout(() => {
                 setIsFlashActive(false);
                 setIsImpactShaking(false);
@@ -408,6 +472,7 @@ export default function App() {
     if (sudden) {
         setCurrentEvent(sudden);
         setEventResult(null);
+        audioManager.playSfx('page_flip');
     } else {
         setCurrentEvent(null); 
         setEventResult(null);
@@ -416,6 +481,7 @@ export default function App() {
   };
 
   const resetGame = () => {
+      audioManager.playClick();
       setPhase('START');
       setDay(1);
       setStats(CHARACTERS[0].initialStats);
@@ -452,7 +518,7 @@ export default function App() {
   });
 
   if (viewGallery) {
-    return <Gallery unlockedEndings={unlockedEndings} onBack={() => setViewGallery(false)} />;
+    return <Gallery unlockedEndings={unlockedEndings} onBack={() => { audioManager.playClick(); setViewGallery(false); }} />;
   }
 
   // --- MENU MODAL (Global) ---
@@ -464,13 +530,13 @@ export default function App() {
               <h2 className="text-xl md:text-2xl font-black italic uppercase tracking-tighter flex items-center gap-2">
                 {menuTab === 'main' ? 'PAUSED' : menuTab === 'save' ? '保存进度 (SAVE)' : '读取进度 (LOAD)'}
               </h2>
-              <button onClick={() => setIsMenuOpen(false)}><X size={24} strokeWidth={3}/></button>
+              <button onClick={() => { audioManager.playClick(); setIsMenuOpen(false); }} onMouseEnter={() => audioManager.playHover()}><X size={24} strokeWidth={3}/></button>
             </div>
 
             <div className="flex border-b-4 border-black bg-white">
-                <button onClick={() => setMenuTab('main')} className={`flex-1 py-3 font-black uppercase text-sm md:text-base flex items-center justify-center gap-2 ${menuTab === 'main' ? 'bg-amber-400' : 'bg-stone-200 text-stone-500 hover:bg-stone-300'}`}><Menu size={16}/> 菜单</button>
-                <button onClick={() => setMenuTab('save')} className={`flex-1 py-3 font-black uppercase text-sm md:text-base flex items-center justify-center gap-2 ${menuTab === 'save' ? 'bg-emerald-400' : 'bg-stone-200 text-stone-500 hover:bg-stone-300'}`}><FileDown size={16}/> 存档</button>
-                <button onClick={() => setMenuTab('load')} className={`flex-1 py-3 font-black uppercase text-sm md:text-base flex items-center justify-center gap-2 ${menuTab === 'load' ? 'bg-blue-400' : 'bg-stone-200 text-stone-500 hover:bg-stone-300'}`}><FileUp size={16}/> 读档</button>
+                <button onClick={() => { audioManager.playClick(); setMenuTab('main'); }} onMouseEnter={() => audioManager.playHover()} className={`flex-1 py-3 font-black uppercase text-sm md:text-base flex items-center justify-center gap-2 ${menuTab === 'main' ? 'bg-amber-400' : 'bg-stone-200 text-stone-500 hover:bg-stone-300'}`}><Menu size={16}/> 菜单</button>
+                <button onClick={() => { audioManager.playClick(); setMenuTab('save'); }} onMouseEnter={() => audioManager.playHover()} className={`flex-1 py-3 font-black uppercase text-sm md:text-base flex items-center justify-center gap-2 ${menuTab === 'save' ? 'bg-emerald-400' : 'bg-stone-200 text-stone-500 hover:bg-stone-300'}`}><FileDown size={16}/> 存档</button>
+                <button onClick={() => { audioManager.playClick(); setMenuTab('load'); }} onMouseEnter={() => audioManager.playHover()} className={`flex-1 py-3 font-black uppercase text-sm md:text-base flex items-center justify-center gap-2 ${menuTab === 'load' ? 'bg-blue-400' : 'bg-stone-200 text-stone-500 hover:bg-stone-300'}`}><FileUp size={16}/> 读档</button>
             </div>
 
             <div className="p-4 md:p-6 overflow-y-auto no-scrollbar bg-white">
@@ -483,17 +549,36 @@ export default function App() {
                       <p className="font-black text-lg">第 {day} 天</p>
                       <p className="text-xs font-bold text-stone-500 uppercase">{stage}</p>
                   </div>
+                  
+                  {/* Font Size Settings */}
+                  <div className="bg-stone-100 border-2 border-black p-3 mb-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Type size={16} />
+                        <span className="font-black text-sm uppercase">字体大小 (Font Size)</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={() => { audioManager.playClick(); setFontScale(100); }} className={`flex-1 py-1 font-bold border-2 border-black ${fontScale === 100 ? 'bg-black text-white' : 'bg-white hover:bg-stone-200'}`}>
+                            默认
+                        </button>
+                        <button onClick={() => { audioManager.playClick(); setFontScale(115); }} className={`flex-1 py-1 font-bold border-2 border-black text-lg ${fontScale === 115 ? 'bg-black text-white' : 'bg-white hover:bg-stone-200'}`}>
+                            中
+                        </button>
+                        <button onClick={() => { audioManager.playClick(); setFontScale(130); }} className={`flex-1 py-1 font-bold border-2 border-black text-xl ${fontScale === 130 ? 'bg-black text-white' : 'bg-white hover:bg-stone-200'}`}>
+                            大
+                        </button>
+                      </div>
+                  </div>
 
-                  <button onClick={() => setIsMenuOpen(false)} className="w-full py-4 bg-black text-white font-black text-xl border-4 border-transparent hover:border-black hover:bg-white hover:text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)] flex items-center justify-center gap-2 uppercase tracking-widest active:translate-y-1 transition-all">
+                  <button onClick={() => { audioManager.playClick(); setIsMenuOpen(false); }} onMouseEnter={() => audioManager.playHover()} className="w-full py-4 bg-black text-white font-black text-xl border-4 border-transparent hover:border-black hover:bg-white hover:text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)] flex items-center justify-center gap-2 uppercase tracking-widest active:translate-y-1 transition-all">
                     <Play size={20} fill="currentColor" /> 继续游戏
                   </button>
-                  <button onClick={() => { setIsMenuOpen(false); setViewGallery(true); }} className="w-full py-3 bg-amber-400 border-4 border-black font-black text-lg shadow-[4px_4px_0px_0px_black] flex items-center justify-center gap-2 active:translate-y-1">
+                  <button onClick={() => { audioManager.playClick(); setIsMenuOpen(false); setViewGallery(true); }} onMouseEnter={() => audioManager.playHover()} className="w-full py-3 bg-amber-400 border-4 border-black font-black text-lg shadow-[4px_4px_0px_0px_black] flex items-center justify-center gap-2 active:translate-y-1">
                     <Trophy size={20}/> 成就图鉴
                   </button>
-                  <button onClick={returnToTitle} className="w-full py-3 bg-stone-100 border-4 border-black font-black text-lg shadow-[4px_4px_0px_0px_black] flex items-center justify-center gap-2 active:translate-y-1 mt-4 hover:bg-stone-200">
+                  <button onClick={returnToTitle} onMouseEnter={() => audioManager.playHover()} className="w-full py-3 bg-stone-100 border-4 border-black font-black text-lg shadow-[4px_4px_0px_0px_black] flex items-center justify-center gap-2 active:translate-y-1 mt-4 hover:bg-stone-200">
                     <Home size={20}/> 返回标题 (保存退出)
                   </button>
-                  <button onClick={() => { if(confirm('确定要重置当前进度吗？未保存的进度将丢失。')) resetGame(); }} className="w-full py-3 bg-rose-100 text-rose-600 border-4 border-black font-black text-lg shadow-[4px_4px_0px_0px_black] flex items-center justify-center gap-2 active:translate-y-1 mt-2">
+                  <button onClick={() => { if(confirm('确定要重置当前进度吗？未保存的进度将丢失。')) resetGame(); }} onMouseEnter={() => audioManager.playHover()} className="w-full py-3 bg-rose-100 text-rose-600 border-4 border-black font-black text-lg shadow-[4px_4px_0px_0px_black] flex items-center justify-center gap-2 active:translate-y-1 mt-2">
                     <RefreshCw size={20}/> 放弃进度 (重开)
                   </button>
                 </div>
@@ -505,6 +590,7 @@ export default function App() {
                           <div key={slot.id} className={`border-4 border-black p-3 relative transition-all ${!slot.isEmpty ? 'bg-white' : 'bg-stone-100 opacity-80'} ${menuTab === 'load' && slot.isEmpty ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-[4px_4px_0px_0px_black] active:translate-y-0.5'}`}>
                               <button 
                                   onClick={() => {
+                                      audioManager.playClick();
                                       const slotNum = index + 1;
                                       if (menuTab === 'save') {
                                           if (slot.isEmpty || confirm(`确定要覆盖存档 ${slotNum} 吗？`)) {
@@ -514,6 +600,7 @@ export default function App() {
                                           if (!slot.isEmpty) loadFromSlot(slotNum);
                                       }
                                   }}
+                                  onMouseEnter={() => audioManager.playHover()}
                                   disabled={menuTab === 'load' && slot.isEmpty}
                                   className="w-full text-left"
                               >
@@ -545,7 +632,8 @@ export default function App() {
                               
                               {!slot.isEmpty && (
                                   <button 
-                                    onClick={(e) => { e.stopPropagation(); deleteSaveSlot(index + 1); }}
+                                    onClick={(e) => { e.stopPropagation(); audioManager.playClick(); deleteSaveSlot(index + 1); }}
+                                    onMouseEnter={() => audioManager.playHover()}
                                     className="absolute bottom-3 right-3 p-2 text-stone-400 hover:text-rose-500 hover:bg-rose-50 rounded border border-transparent hover:border-rose-200 transition-colors"
                                   >
                                       <Trash2 size={16} />
@@ -564,7 +652,7 @@ export default function App() {
   return (
     <>
       {phase === 'START' && (
-        <TitleScreen onStart={handleStartGame} onContinue={continueLatestGame} onGallery={() => setViewGallery(true)} />
+        <TitleScreen onStart={handleStartGame} onContinue={continueLatestGame} onGallery={() => { audioManager.playClick(); setViewGallery(true); }} />
       )}
       
       {phase === 'PROLOGUE' && (
@@ -602,7 +690,7 @@ export default function App() {
             unlockedActions={unlockedActions}
             lockedActions={lockedActions}
             
-            onMenuOpen={() => { setIsMenuOpen(true); setMenuTab('main'); }}
+            onMenuOpen={() => { audioManager.playClick(); setIsMenuOpen(true); setMenuTab('main'); }}
             onChoice={handleChoice}
             onResolutionComplete={handleResolutionComplete}
             onStartDay={(d) => startDay(d)}
@@ -620,7 +708,7 @@ export default function App() {
             ending={ending} 
             isVictory={phase === 'VICTORY'} 
             onReset={resetGame} 
-            onGallery={() => setViewGallery(true)} 
+            onGallery={() => { audioManager.playClick(); setViewGallery(true); }} 
         />
       )}
 

@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Character } from '../../types';
+import { audioManager } from '../../utils/audio';
 
 interface Props {
     characters: Character[];
@@ -16,7 +17,7 @@ export const CharacterSelect: React.FC<Props> = ({ characters, onSelect }) => {
                     <button 
                         key={char.id} 
                         disabled={char.locked} 
-                        onClick={() => onSelect(char)} 
+                        onClick={() => { audioManager.playClick(); onSelect(char); }} 
                         className={`bg-white border-[6px] border-black p-6 transition-all shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-left active:translate-y-0.5 group ${char.locked ? 'opacity-40 grayscale' : ''}`}
                     >
                         <div className="w-12 h-12 md:w-16 md:h-16 border-4 border-black mb-4 group-hover:rotate-6 transition-transform">

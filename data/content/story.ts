@@ -34,7 +34,8 @@ export const STORY_QUESTS: GameEvent[] = [
                              message: msg, 
                              success: true, 
                              effectType: 'neutral',
-                             stageUnlock: 'CAT_LORD'
+                             stageUnlock: 'CAT_LORD',
+                             sound: 'hiss'
                          };
                      }
                      const failMsg = pick([
@@ -42,7 +43,7 @@ export const STORY_QUESTS: GameEvent[] = [
                          '你高估了自己的体力，挥了两拳就喘不上气。独眼龙嘲笑地看着你，把你踢下了台。',
                          '你刚冲上去就滑倒了。全场爆笑。这绝对是你猫生中最尴尬的时刻。'
                      ]);
-                     return { changes: { health: -20, hissing: -5, satiety: -10 }, message: failMsg, success: false, effectType: 'damage' };
+                     return { changes: { health: -20, hissing: -5, satiety: -10 }, message: failMsg, success: false, effectType: 'damage', sound: 'impact' };
                 }
             },
             {
@@ -62,7 +63,8 @@ export const STORY_QUESTS: GameEvent[] = [
                              message: msg, 
                              success: true, 
                              effectType: 'neutral',
-                             stageUnlock: 'CAT_LORD'
+                             stageUnlock: 'CAT_LORD',
+                             sound: 'meow'
                          };
                     }
                     const failMsg = pick([
@@ -113,7 +115,7 @@ export const STORY_QUESTS: GameEvent[] = [
                      '你被自动感应门夹住了尾巴。那种疼痛让你发出了杀猪般的叫声，被保安扔了出去。',
                      '里面有一只凶猛的杜宾犬。你还没来得及看清装修，就为了保命而逃之夭夭。'
                  ]);
-                 return { changes: { health: -15, hissing: 5 }, message: failMsg, success: false, effectType: 'damage' };
+                 return { changes: { health: -15, hissing: 5 }, message: failMsg, success: false, effectType: 'damage', sound: 'impact' };
             }
           },
           {
@@ -127,7 +129,7 @@ export const STORY_QUESTS: GameEvent[] = [
                         '你只是躺在门口，他们就以为你快死了。立刻把你抱进去喂了顶级罐头。计划通。',
                         '小孩哭着闹着要养你。家长没办法，只好把你接了进去。虽然要忍受小孩，但值得。'
                     ]);
-                    return { changes: { satiety: 25, hissing: -5 }, message: msg, success: true, effectType: 'heal' };
+                    return { changes: { satiety: 25, hissing: -5 }, message: msg, success: true, effectType: 'heal', sound: 'meow' };
                 }
                 const failMsg = pick([
                     '“去去去！”园丁用水管滋了你一身。不仅没吃到，还洗了个冷水澡。',
@@ -170,7 +172,8 @@ export const STORY_QUESTS: GameEvent[] = [
                      message: msg, 
                      success: true, 
                      effectType: 'heal',
-                     stageUnlock: 'CELEBRITY'
+                     stageUnlock: 'CELEBRITY',
+                     sound: 'shutter'
                  }
                }
                const failMsg = pick([
@@ -192,7 +195,7 @@ export const STORY_QUESTS: GameEvent[] = [
                         '你直接无视了人类，打了个哈欠睡着了。评论区都在刷“高冷男神”。',
                         '你给了镜头一个鄙视的眼神然后走开了。这段视频被做成了几万个表情包。'
                     ]);
-                    return { changes: { hissing: 5, smarts: 2 }, message: msg, success: true, effectType: 'neutral' };
+                    return { changes: { hissing: 5, smarts: 2 }, message: msg, success: true, effectType: 'neutral', sound: 'hiss' };
                 }
                 const failMsg = pick([
                     '你的不理不睬被解读为“无趣”。视频根本没火。',
@@ -226,14 +229,14 @@ export const STORY_QUESTS: GameEvent[] = [
                          '你非常配合地吃播。商家乐开了花，你下半辈子的猫粮都有着落了。',
                          '虽然穿着傻气的马甲，但看着账户余额（虽然不是你的），你感到很欣慰。'
                      ]);
-                     return { changes: { health: 15, satiety: 30, smarts: 5 }, message: msg, success: true, effectType: 'heal' };
+                     return { changes: { health: 15, satiety: 30, smarts: 5 }, message: msg, success: true, effectType: 'heal', sound: 'meow' };
                  }
                  const failMsg = pick([
                      '你穿上马甲后突然发狂，把直播用的猫粮袋子抓了个稀烂。直播事故现场。',
                      '你吃到一半吐了。品牌方连夜解约，还要求赔偿地毯清洗费。',
                      '你在直播间当众拉了一坨屎。虽然流量爆炸，但你的职业生涯结束了。'
                  ]);
-                 return { changes: { hissing: 20, satiety: 20 }, message: failMsg, success: false, effectType: 'damage' };
+                 return { changes: { hissing: 20, satiety: 20 }, message: failMsg, success: false, effectType: 'damage', sound: 'fail' };
             }
           },
           {
@@ -247,7 +250,7 @@ export const STORY_QUESTS: GameEvent[] = [
                           '你趁他们调试灯光时，从窗户跳了出去。自由的味道比罐头更香。',
                           '你咬断了网线，趁乱消失在夜色中。从此江湖上只剩你的传说。'
                       ]);
-                      return { changes: { hissing: 30, smarts: 5, satiety: -10 }, message: msg, success: true, effectType: 'neutral' };
+                      return { changes: { hissing: 30, smarts: 5, satiety: -10 }, message: msg, success: true, effectType: 'neutral', sound: 'impact' };
                   }
                   const failMsg = pick([
                       '你想跑，但门被锁死了。你被迫营业，一脸丧气。',
@@ -280,14 +283,14 @@ export const HIGH_RISK_EVENTS: Record<number, GameEvent> = {
                             '你利用地形优势，把它踹进了下水道深处。你是这里的神！',
                             '你被咬了好几口，但最终还是你赢了。这是王者的伤勋。'
                         ]);
-                        return { changes: { hissing: 10, satiety: 30, health: -10 }, message: msg, success: true, effectType: 'damage' };
+                        return { changes: { hissing: 10, satiety: 30, health: -10 }, message: msg, success: true, effectType: 'damage', sound: 'hiss' };
                     }
                     const failMsg = pick([
                         '它居然会柔术！你被按在地上摩擦，尾巴都被咬秃了。',
                         '老鼠帮手来了！你双拳难敌四手，狼狈逃窜。',
                         '你被它那巨大的门牙吓傻了，僵在原地被打了一顿。'
                     ]);
-                    return { changes: { health: -30, hissing: -5 }, message: failMsg, success: false, effectType: 'damage' };
+                    return { changes: { health: -30, hissing: -5 }, message: failMsg, success: false, effectType: 'damage', sound: 'impact' };
                 }
             },
             {
@@ -308,7 +311,7 @@ export const HIGH_RISK_EVENTS: Record<number, GameEvent> = {
                         '后面是死路！你不得不硬着头皮挨了两下。',
                         '逃跑途中滑倒了，摔了个狗吃屎。'
                     ]);
-                    return { changes: { health: -10, hissing: -5 }, message: failMsg, success: false, effectType: 'damage' };
+                    return { changes: { health: -10, hissing: -5 }, message: failMsg, success: false, effectType: 'damage', sound: 'impact' };
                 }
             }
         ]
@@ -326,7 +329,7 @@ export const STUPID_DEATH_EVENT: GameEvent = {
             id: 'die',
             text: '下辈子注意点',
             calculateChance: (stats) => 0,
-            effect: (stats) => ({ changes: { health: -100 }, message: '眼前一黑。旁白都不想解说你的死法。', success: false, effectType: 'damage' })
+            effect: (stats) => ({ changes: { health: -100 }, message: '眼前一黑。旁白都不想解说你的死法。', success: false, effectType: 'damage', sound: 'impact' })
         }
     ]
 };
