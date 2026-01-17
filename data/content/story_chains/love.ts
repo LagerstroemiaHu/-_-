@@ -76,13 +76,23 @@ export const LOVE_QUESTS: GameEvent[] = [
             {
                 id: 'love_choice_give_all',
                 text: '全让给她吃',
-                calculateChance: (stats) => 100,
-                effect: (stats) => ({
-                    changes: { satiety: -5, hissing: -5, smarts: 5 },
-                    message: '你看着她吃完了。她感动地蹭了蹭你：“你比隔壁那只渣橘强多了。”',
-                    success: true,
-                    effectType: 'heal'
-                })
+                calculateChance: (stats) => 90, // 修改：从100%降为90%
+                effect: (stats) => {
+                    if (roll(90)) {
+                        return {
+                            changes: { satiety: -5, hissing: -5, smarts: 5 },
+                            message: '你看着她吃完了。她感动地蹭了蹭你：“你比隔壁那只渣橘强多了。”',
+                            success: true,
+                            effectType: 'heal'
+                        };
+                    }
+                    return {
+                        changes: { satiety: -5, hissing: 2 },
+                        message: '她以为你不爱吃这个，觉得你很挑剔，生气地走了。',
+                        success: false,
+                        effectType: 'neutral'
+                    };
+                }
             }
         ]
     },
@@ -150,13 +160,23 @@ export const LOVE_QUESTS: GameEvent[] = [
             {
                 id: 'love_choice_show_scar',
                 text: '展示伤口 (做姐妹)',
-                calculateChance: (stats) => 100,
-                effect: (stats) => ({
-                    changes: { hissing: -10, smarts: 10 },
-                    message: '你展示了那个部位。她露出了同情的眼神，隔着玻璃贴了贴你的脸：“做姐妹也挺好。”',
-                    success: true,
-                    effectType: 'neutral'
-                })
+                calculateChance: (stats) => 95, // 修改：从100%降为95%
+                effect: (stats) => {
+                    if (roll(95)) {
+                        return {
+                            changes: { hissing: -10, smarts: 10 },
+                            message: '你展示了那个部位。她露出了同情的眼神，隔着玻璃贴了贴你的脸：“做姐妹也挺好。”',
+                            success: true,
+                            effectType: 'neutral'
+                        };
+                    }
+                    return {
+                        changes: { hissing: 5, health: -2 },
+                        message: '她没看懂你的意思，以为你在展示新造型，一脸困惑地走了。',
+                        success: false,
+                        effectType: 'neutral'
+                    };
+                }
             },
             {
                 id: 'love_choice_hide',

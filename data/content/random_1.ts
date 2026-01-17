@@ -85,14 +85,17 @@ export const RANDOM_EVENTS_EXTRA: GameEvent[] = [
           {
               id: 'eat_corn',
               text: '生吃红薯',
-              calculateChance: (stats) => 100,
+              calculateChance: (stats) => 95, // 修改：从100%降为95%
               effect: (stats) => {
-                  const msg = pick([
-                      '咔嚓！你咬了一口生红薯。虽然有点硬，但胜在纯天然。',
-                      '你学着羽姐的样子大口咀嚼。观众直呼：“这猫太接地气了！”',
-                      '这一口下去，你感觉自己充满了东北黑土地的力量。'
-                  ]);
-                  return { changes: { satiety: 6, health: 1 }, message: msg, success: true, effectType: 'heal' };
+                  if (roll(95)) {
+                    const msg = pick([
+                        '咔嚓！你咬了一口生红薯。虽然有点硬，但胜在纯天然。',
+                        '你学着羽姐的样子大口咀嚼。观众直呼：“这猫太接地气了！”',
+                        '这一口下去，你感觉自己充满了东北黑土地的力量。'
+                    ]);
+                    return { changes: { satiety: 6, health: 1 }, message: msg, success: true, effectType: 'heal' };
+                  }
+                  return { changes: { health: -2 }, message: '红薯太硬了，差点把你的牙崩掉。', success: false, effectType: 'damage' };
               }
           }
       ]
@@ -153,14 +156,17 @@ export const RANDOM_EVENTS_EXTRA: GameEvent[] = [
           {
               id: 'smash_pot',
               text: '打碎那个罐子！',
-              calculateChance: (stats) => 100,
+              calculateChance: (stats) => 95, // 修改：从100%降为95%
               effect: (stats) => {
-                  const msg = pick([
-                      '那是本能！你打碎了路边所有的罐子，捡到了不少灵蕴（其实是硬币）。',
-                      '你把土地公公的头都打歪了。但是很爽。',
-                      '这才是天命喵该干的事。破坏让你的哈气值提升了。'
-                  ]);
-                  return { changes: { hissing: 3, smarts: -1 }, message: msg, success: true, effectType: 'neutral' };
+                  if (roll(95)) {
+                    const msg = pick([
+                        '那是本能！你打碎了路边所有的罐子，捡到了不少灵蕴（其实是硬币）。',
+                        '你把土地公公的头都打歪了。但是很爽。',
+                        '这才是天命喵该干的事。破坏让你的哈气值提升了。'
+                    ]);
+                    return { changes: { hissing: 3, smarts: -1 }, message: msg, success: true, effectType: 'neutral' };
+                  }
+                  return { changes: { health: -2 }, message: '罐子是铁做的，你的爪子肿了。物理引擎太真实了。', success: false, effectType: 'damage' };
               }
           },
           {
@@ -212,14 +218,17 @@ export const RANDOM_EVENTS_EXTRA: GameEvent[] = [
           {
               id: 'eat_now',
               text: '直接吃 (无聊)',
-              calculateChance: (stats) => 100,
+              calculateChance: (stats) => 95, // 修改：从100%降为95%
               effect: (stats) => {
-                  const msg = pick([
-                      '你直接吃了。没有任何戏剧性，只是一顿普通的饭。',
-                      '填饱了肚子，但失去了一个成为网红表情包的机会。',
-                      '味道一般，勉强果腹。'
-                  ]);
-                  return { changes: { satiety: 8 }, message: msg, success: true, effectType: 'neutral' };
+                  if (roll(95)) {
+                    const msg = pick([
+                        '你直接吃了。没有任何戏剧性，只是一顿普通的饭。',
+                        '填饱了肚子，但失去了一个成为网红表情包的机会。',
+                        '味道一般，勉强果腹。'
+                    ]);
+                    return { changes: { satiety: 8 }, message: msg, success: true, effectType: 'neutral' };
+                  }
+                  return { changes: { health: -5 }, message: '饭已经凉透了，吃完后你的肚子开始隐隐作痛。', success: false, effectType: 'damage' };
               }
           }
       ]

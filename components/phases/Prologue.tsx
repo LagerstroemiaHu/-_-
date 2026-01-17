@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, SkipForward, ArrowLeft } from 'lucide-react';
+import { ArrowRight, SkipForward, ArrowLeft, Heart, Brain, Fish, Zap } from 'lucide-react';
 import { audioManager } from '../../utils/audio';
 import { getImg } from '../../data/utils';
 
@@ -8,6 +8,24 @@ interface Props {
     onComplete: () => void;
     onBack: () => void;
 }
+
+const PrologueStatBar = ({ icon: Icon, label, value, color }: { icon: any, label: string, value: number, color: string }) => (
+    <div className="w-full mb-2">
+        <div className="flex justify-between items-end mb-0.5 px-0.5">
+            <div className="flex items-center gap-1">
+                <Icon size={12} className="text-black" strokeWidth={3} />
+                <span className="text-[10px] font-black uppercase leading-none tracking-tighter">{label}</span>
+            </div>
+            <span className="text-[10px] font-black font-mono leading-none">{value}</span>
+        </div>
+        <div className="w-full h-2 border-2 border-black bg-stone-200">
+            <div 
+                className={`h-full ${color}`} 
+                style={{ width: `${value}%` }} 
+            />
+        </div>
+    </div>
+);
 
 export const Prologue: React.FC<Props> = ({ onComplete, onBack }) => {
     const [panelIndex, setPanelIndex] = useState(0);
@@ -17,6 +35,7 @@ export const Prologue: React.FC<Props> = ({ onComplete, onBack }) => {
             id: 1,
             image: getImg('爬上博古架', 'b91c1c'),
             caption: '那一刻，我只是想在狭小的空间里奔跑',
+            stat: { icon: Heart, label: '健康', value: 60, color: 'bg-rose-500' },
             sub: (
                 <>
                     哪怕四处碰壁，也要用 <span className="text-rose-500 font-black text-lg md:text-xl animate-pulse inline-block mx-1">健康</span> 证明我还活着。
@@ -27,6 +46,7 @@ export const Prologue: React.FC<Props> = ({ onComplete, onBack }) => {
             id: 2,
             image: getImg('人类的愤怒', '4a044e'),
             caption: '那个白手套发不断拿发光方块向我靠近又远离',
+            stat: { icon: Brain, label: '智力', value: 30, color: 'bg-blue-500' },
             sub: (
                 <>
                     是戏弄还是陷阱？我需要更高的 <span className="text-blue-500 font-black text-lg md:text-xl animate-bounce inline-block mx-1">智力</span> 才能看穿。
@@ -37,6 +57,7 @@ export const Prologue: React.FC<Props> = ({ onComplete, onBack }) => {
             id: 3,
             image: getImg('被驱逐', '171717'),
             caption: '大门重重关上。雪花落在我温热的鼻头上',
+            stat: { icon: Fish, label: '饱腹', value: 60, color: 'bg-amber-500' },
             sub: (
                 <>
                     寒风刺骨，从此以后，<span className="text-amber-500 font-black text-lg md:text-xl animate-wiggle inline-block mx-1">饱腹</span> 将是最大的奢望。
@@ -47,6 +68,7 @@ export const Prologue: React.FC<Props> = ({ onComplete, onBack }) => {
             id: 4,
             image: getImg('凶狠凝视', 'f59e0b'),
             caption: '没有回头乞求。我舔了舔爪子，露出了獠牙',
+            stat: { icon: Zap, label: '哈气', value: 40, color: 'bg-purple-600' },
             sub: (
                 <>
                     面对残酷的世界，唯有 <span className="text-purple-600 font-black text-lg md:text-xl animate-vibrate inline-block mx-1">哈气</span> 能捍卫尊严。
@@ -133,6 +155,7 @@ export const Prologue: React.FC<Props> = ({ onComplete, onBack }) => {
                                         transition-all duration-300 delay-100
                                         ${isCurrent ? 'scale-100 opacity-100' : 'scale-95 opacity-80'}
                                     `}>
+                                        <PrologueStatBar {...panel.stat} />
                                         <p className="font-black text-sm md:text-base text-black leading-tight uppercase">
                                             {panel.caption}
                                         </p>

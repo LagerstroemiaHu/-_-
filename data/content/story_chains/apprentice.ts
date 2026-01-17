@@ -77,13 +77,23 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
             {
                 id: 'app_choice_accept',
                 text: '欣慰吃下',
-                calculateChance: (stats) => 100,
-                effect: (stats) => ({
-                    changes: { satiety: 30, health: 10, hissing: -5 },
-                    message: '“师父，这是孝敬您的。” 你吃到了猫生中最美味的鸽子。',
-                    success: true,
-                    effectType: 'heal'
-                })
+                calculateChance: (stats) => 95, // 修改：从100%降为95%
+                effect: (stats) => {
+                    if (roll(95)) {
+                        return {
+                            changes: { satiety: 30, health: 10, hissing: -5 },
+                            message: '“师父，这是孝敬您的。” 你吃到了猫生中最美味的鸽子。',
+                            success: true,
+                            effectType: 'heal'
+                        };
+                    }
+                    return {
+                        changes: { health: -5, satiety: -5 },
+                        message: '鸽子好像不太新鲜...你吃完后拉肚子了。徒弟一脸愧疚。',
+                        success: false,
+                        effectType: 'damage'
+                    };
+                }
             }
         ]
     },
@@ -258,13 +268,23 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
             {
                 id: 'app_choice_collab',
                 text: '一起营业',
-                calculateChance: (stats) => 100,
-                effect: (stats) => ({
-                    changes: { smarts: 10, hissing: -5, satiety: 20 },
-                    message: '“霸道保镖俏老头”组合火遍全网！徒弟也被收养了。',
-                    success: true,
-                    effectType: 'heal'
-                })
+                calculateChance: (stats) => 90, // 修改：从100%降为90%
+                effect: (stats) => {
+                    if (roll(90)) {
+                        return {
+                            changes: { smarts: 10, hissing: -5, satiety: 20 },
+                            message: '“霸道保镖俏老头”组合火遍全网！徒弟也被收养了。',
+                            success: true,
+                            effectType: 'heal'
+                        };
+                    }
+                    return {
+                        changes: { hissing: 2, smarts: -2 },
+                        message: '徒弟太紧张了，在镜头前炸毛，把场面搞砸了。',
+                        success: false,
+                        effectType: 'neutral'
+                    };
+                }
             }
         ]
     },

@@ -25,9 +25,12 @@ export const RANDOM_EVENTS: GameEvent[] = [
           {
               id: 'watch_zen',
               text: '静静欣赏',
-              calculateChance: (stats) => 100,
+              calculateChance: (stats) => 90, // 修改：从100%降为90%
               effect: (stats) => {
-                  return { changes: { smarts: 3, hissing: -2 }, message: '你看着它起舞，参透了万物静观皆自得的道理。你的心境平和了。', success: true, effectType: 'heal' };
+                  if (roll(90)) {
+                    return { changes: { smarts: 3, hissing: -2 }, message: '你看着它起舞，参透了万物静观皆自得的道理。你的心境平和了。', success: true, effectType: 'heal' };
+                  }
+                  return { changes: { smarts: -1 }, message: '看着看着你睡着了，口水流了一地，醒来时蝴蝶早就不见了。', success: false, effectType: 'neutral' };
               }
           }
       ]
@@ -70,9 +73,12 @@ export const RANDOM_EVENTS: GameEvent[] = [
           {
               id: 'sunbathe',
               text: '光合作用',
-              calculateChance: (stats) => 100,
+              calculateChance: (stats) => 95, // 修改：从100%降为95%
               effect: (stats) => {
-                  return { changes: { health: 3, hissing: -3, smarts: -1 }, message: '你躺在光斑里，随着太阳移动挪动身体。这一刻，你是一只液体的猫。', success: true, effectType: 'sleep' };
+                  if (roll(95)) {
+                    return { changes: { health: 3, hissing: -3, smarts: -1 }, message: '你躺在光斑里，随着太阳移动挪动身体。这一刻，你是一只液体的猫。', success: true, effectType: 'sleep' };
+                  }
+                  return { changes: { health: -1, hissing: 1 }, message: '刚躺下，一片乌云遮住了太阳。你的好心情没了。', success: false, effectType: 'neutral' };
               }
           },
           {
@@ -149,14 +155,17 @@ export const RANDOM_EVENTS: GameEvent[] = [
           {
               id: 'listen_song',
               text: '聆听他的歌声',
-              calculateChance: (stats) => 100,
+              calculateChance: (stats) => 90, // 修改：从100%降为90%
               effect: (stats) => {
-                  const msg = pick([
-                      '他唱起了《Zood》。那空灵的嗓音净化了你的心灵，虽然你一句也没听懂。',
-                      '你感觉自己在草原上奔跑，周围全是名为“吱吱”的小马（老鼠）。',
-                      '你悟出了“回笼”的真谛。世界变得简单而纯粹。'
-                  ]);
-                  return { changes: { smarts: -1, health: 3, hissing: -3 }, message: msg, success: true, effectType: 'heal' };
+                  if (roll(90)) {
+                    const msg = pick([
+                        '他唱起了《Zood》。那空灵的嗓音净化了你的心灵，虽然你一句也没听懂。',
+                        '你感觉自己在草原上奔跑，周围全是名为“吱吱”的小马（老鼠）。',
+                        '你悟出了“回笼”的真谛。世界变得简单而纯粹。'
+                    ]);
+                    return { changes: { smarts: -1, health: 3, hissing: -3 }, message: msg, success: true, effectType: 'heal' };
+                  }
+                  return { changes: { smarts: -2 }, message: '这歌声太魔性了，在你脑子里循环了一整天，搞得你头痛欲裂。', success: false, effectType: 'damage' };
               }
           }
       ]
@@ -278,14 +287,17 @@ export const RANDOM_EVENTS: GameEvent[] = [
           {
               id: 'rat_tail_juice',
               text: '劝他“好自为之”',
-              calculateChance: (stats) => 100,
+              calculateChance: (stats) => 90, // 修改：从100%降为90%
               effect: (stats) => {
-                  const msg = pick([
-                      '你优雅地走开，并留下了一个鄙视的眼神。大师愣在原地，开始反思自己的武德。你的智力得到了社会实践的提升。',
-                      '你轻蔑地打了个哈欠，大师气得跳脚，却因为腰椎间盘突出无法追赶。你的冷静赢得了围观猫咪的掌声。',
-                      '你留下了一句模糊的“喵（傻）”，飘然而去。这种不战而屈人之兵的境界让你的智力大幅上涨。'
-                  ]);
-                  return { changes: { smarts: 3, hissing: 1 }, message: msg, success: true, effectType: 'neutral' };
+                  if (roll(90)) {
+                    const msg = pick([
+                        '你优雅地走开，并留下了一个鄙视的眼神。大师愣在原地，开始反思自己的武德。你的智力得到了社会实践的提升。',
+                        '你轻蔑地打了个哈欠，大师气得跳脚，却因为腰椎间盘突出无法追赶。你的冷静赢得了围观猫咪的掌声。',
+                        '你留下了一句模糊的“喵（傻）”，飘然而去。这种不战而屈人之兵的境界让你的智力大幅上涨。'
+                    ]);
+                    return { changes: { smarts: 3, hissing: 1 }, message: msg, success: true, effectType: 'neutral' };
+                  }
+                  return { changes: { health: -2 }, message: '大师急眼了，从背后偷袭了你！“我大意了，没有闪”的人变成了你。', success: false, effectType: 'damage' };
               }
           }
       ]

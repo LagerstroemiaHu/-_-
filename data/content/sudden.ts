@@ -9,7 +9,6 @@ export const SUDDEN_EVENTS: GameEvent[] = [
         description: '主人让你选择：', 
         image: getImg('艰难抉择', '111827'),
         type: 'AUTO',
-        // 触发条件：豪宅或网红阶段，30%概率触发
         autoTriggerCondition: (day, stats, stage) => (stage === 'MANSION' || stage === 'CELEBRITY') && roll(30),
         choices: [
             {
@@ -29,7 +28,7 @@ export const SUDDEN_EVENTS: GameEvent[] = [
                     changes: {},
                     message: '选错了，再选一次',
                     success: false,
-                    retry: true // 触发重选机制
+                    retry: true 
                 })
             }
         ]
@@ -40,7 +39,6 @@ export const SUDDEN_EVENTS: GameEvent[] = [
         description: '警告：你吃得太多太好了。你的肚子涨得像个气球，连路都走不动。过度的安逸是流浪猫的大忌。',
         image: getImg('暴饮暴食', 'f59e0b'),
         type: 'AUTO',
-        // Trigger if Satiety > 90 AND Health > 80 (Too easy)
         autoTriggerCondition: (day, stats, stage) => stats.satiety > 90 && stats.health > 80 && roll(60),
         choices: [
             {
@@ -48,7 +46,6 @@ export const SUDDEN_EVENTS: GameEvent[] = [
                 text: '呕...好难受',
                 calculateChance: (stats) => 10,
                 effect: (stats) => {
-                    // Small chance to vomit gracefully
                     if (roll(10)) {
                         return {
                             changes: { health: -5, satiety: -15 },
@@ -94,7 +91,7 @@ export const SUDDEN_EVENTS: GameEvent[] = [
         description: '你最近太嚣张了。你以为自己是狮子王，结果在一只真•恶犬面前翻了车。',
         image: getImg('盲目自信', 'b91c1c'),
         type: 'AUTO',
-        // Trigger if Hissing > 80 in early game (Progression balancing)
+        // 恢复：移除对马保锅历史记录的检查
         autoTriggerCondition: (day, stats, stage) => stage === 'STRAY' && stats.hissing > 80 && roll(50),
         choices: [
             {
@@ -136,7 +133,6 @@ export const SUDDEN_EVENTS: GameEvent[] = [
         description: '你太聪明了。你开始思考“猫生的意义”。为什么我们要抓老鼠？为什么天是蓝的？这种思考让你感到虚无。',
         image: getImg('猫生哲学', '1e3a8a'),
         type: 'AUTO',
-        // Trigger if Smarts > 70 but locked in early stages
         autoTriggerCondition: (day, stats, stage) => stats.smarts > 70 && stage !== 'CELEBRITY' && roll(40),
         choices: [
             {
@@ -189,7 +185,6 @@ export const SUDDEN_EVENTS: GameEvent[] = [
         description: '阴雨天。你年轻时留下的伤腿开始隐隐作痛。岁月不饶猫啊。',
         image: getImg('旧伤复发', '57534e'),
         type: 'AUTO',
-        // Trigger purely random but more likely in late game
         autoTriggerCondition: (day, stats, stage) => day > 10 && roll(20),
         choices: [
             {
@@ -231,7 +226,6 @@ export const SUDDEN_EVENTS: GameEvent[] = [
         description: '你快饿死了。就在你眼冒金星的时候，天上掉下了一个肉包子（或者是谁没拿稳）。',
         image: getImg('天降肉包', 'fbbf24'),
         type: 'AUTO',
-        // Mercy mechanic: Trigger if dying (Satiety < 10)
         autoTriggerCondition: (day, stats, stage) => stats.satiety < 10 && roll(80),
         choices: [
             {

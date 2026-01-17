@@ -41,18 +41,28 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
             {
                 id: 'phil_choice_share',
                 text: '弱者的互助 (分食)',
-                calculateChance: (stats) => 100,
-                effect: (stats) => ({
-                    changes: { satiety: 15, smarts: 10, hissing: -5 },
-                    message: '你撕下一半推给它。你们在寒风中分享了这顿饭。也许合作能让我们活下去。',
-                    success: true,
-                    effectType: 'heal'
-                })
+                calculateChance: (stats) => 90, // 修改：从100%降为90%
+                effect: (stats) => {
+                    if (roll(90)) {
+                        return {
+                            changes: { satiety: 15, smarts: 10, hissing: -5 },
+                            message: '你撕下一半推给它。你们在寒风中分享了这顿饭。也许合作能让我们活下去。',
+                            success: true,
+                            effectType: 'heal'
+                        };
+                    }
+                    return {
+                        changes: { satiety: -5, hissing: 5 },
+                        message: '你刚推过去，它就叼起整块肉跑了！该死的背叛。你上了一课。',
+                        success: false,
+                        effectType: 'neutral'
+                    };
+                }
             },
             {
                 id: 'phil_choice_overthink_1',
                 text: '思考肉的来源',
-                calculateChance: (stats) => 20 + stats.smarts * 0.5,
+                calculateChance: (stats) => 100,
                 effect: (stats) => ({
                     changes: { satiety: -10, smarts: 2, health: -5 },
                     message: '在你思考的时候，肉被狗叼走了。思考太多是会饿死的。',
@@ -105,12 +115,14 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
             {
                 id: 'phil_choice_debate',
                 text: '和它辩论',
-                calculateChance: (stats) => Math.min(80, 10 + stats.smarts * 0.5),
+                // 修复逻辑：确保 calculateChance 和 effect 内部使用的概率一致。
+                calculateChance: (stats) => Math.min(80, 20 + stats.smarts * 0.6),
                 effect: (stats) => {
-                    if (roll(10 + stats.smarts * 0.5)) {
-                        return { changes: { smarts: 10, hissing: -5 }, message: '你用逻辑说服了它。', success: true, effectType: 'neutral' };
+                    const chance = Math.min(80, 20 + stats.smarts * 0.6);
+                    if (roll(chance)) {
+                        return { changes: { smarts: 10, hissing: -5 }, message: '你用逻辑说服了它。它听得晕头转向，最后交了双倍鱼头当学费。', success: true, effectType: 'neutral' };
                     }
-                    return { changes: { hissing: -10, health: -5 }, message: '它直接给了你一拳。暴力比哲学更管用。', success: false, effectType: 'damage' };
+                    return { changes: { hissing: -10, health: -5 }, message: '它不想听你的长篇大论，直接给了你一拳。暴力比哲学更管用。', success: false, effectType: 'damage' };
                 }
             }
         ]
@@ -135,13 +147,23 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
             {
                 id: 'phil_choice_work',
                 text: '出卖色相 (打工)',
-                calculateChance: (stats) => 100,
-                effect: (stats) => ({
-                    changes: { satiety: 30, smarts: 5, hissing: -5 }, // Stage 3: Hissing drops
-                    message: '你跳了。我的可爱是生产资料，罐头是工资。我被异化成了商品。',
-                    success: true,
-                    effectType: 'neutral'
-                })
+                calculateChance: (stats) => 90, // 修改：从100%降为90%
+                effect: (stats) => {
+                    if (roll(90)) {
+                        return {
+                            changes: { satiety: 30, smarts: 5, hissing: -5 }, // Stage 3: Hissing drops
+                            message: '你跳了。我的可爱是生产资料，罐头是工资。我被异化成了商品。',
+                            success: true,
+                            effectType: 'neutral'
+                        };
+                    }
+                    return {
+                        changes: { hissing: 2, satiety: -5 },
+                        message: '你跳得很敷衍，甚至绊了一跤。铲屎官笑了，但没给罐头。',
+                        success: false,
+                        effectType: 'neutral'
+                    };
+                }
             },
             {
                 id: 'phil_choice_strike',
@@ -198,13 +220,23 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
             {
                 id: 'phil_choice_oligarch',
                 text: '独善其身 (寡头)',
-                calculateChance: (stats) => 100,
-                effect: (stats) => ({
-                    changes: { satiety: 20, smarts: -5, hissing: -10 },
-                    message: '你拉上了窗帘。这是你努力（或出卖色相）得来的，你成为了既得利益者。',
-                    success: true,
-                    effectType: 'sleep'
-                })
+                calculateChance: (stats) => 90, // 修改：从100%降为90%
+                effect: (stats) => {
+                    if (roll(90)) {
+                        return {
+                            changes: { satiety: 20, smarts: -5, hissing: -10 },
+                            message: '你拉上了窗帘。这是你努力（或出卖色相）得来的，你成为了既得利益者。',
+                            success: true,
+                            effectType: 'sleep'
+                        };
+                    }
+                    return {
+                        changes: { smarts: -2, health: -5 },
+                        message: '你拉上窗帘，但窗外的惨叫声让你彻夜难眠。良心未泯是种折磨。',
+                        success: false,
+                        effectType: 'sleep'
+                    };
+                }
             },
             {
                 id: 'phil_choice_revolution',
