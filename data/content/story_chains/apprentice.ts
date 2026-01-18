@@ -13,7 +13,12 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
         image: getImg('落魄猫咪', 'd97706'),
         type: 'SIDE_QUEST',
         allowedStages: ['STRAY'],
-        unlockCondition: (day) => ({ unlocked: day >= 2, reason: '需第2天' }),
+        unlockCondition: (day, stats, completed, history, completedAt, failedAt) => {
+            if (failedAt['side_apprentice_1'] && day <= failedAt['side_apprentice_1'] + 1) {
+                return { unlocked: false, reason: '需冷却' };
+            }
+            return { unlocked: day >= 2, reason: '需第2天' };
+        },
         choices: [
             {
                 id: 'app_choice_teach',
@@ -30,8 +35,8 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
                     }
                     return {
                         changes: { satiety: -5, smarts: 2 },
-                        message: '它太笨了，学不会。但它记住了你的恩情。',
-                        success: true, 
+                        message: '它太笨了，学不会。但它记住了你的恩情。（过两天再教教看？）',
+                        success: false, // Changed to false for retry
                         effectType: 'neutral'
                     };
                 }
@@ -51,7 +56,7 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
                     }
                     return {
                         changes: { health: -5, hissing: 2 },
-                        message: '它反抗剧烈，抓伤了你。',
+                        message: '它反抗剧烈，抓伤了你。（过两天再试试？）',
                         success: false,
                         effectType: 'damage'
                     };
@@ -69,10 +74,15 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
         image: getImg('徒弟的报恩', 'fbbf24'),
         type: 'SIDE_QUEST',
         allowedStages: ['CAT_LORD'],
-        unlockCondition: (day, stats, completed, history) => ({
-            unlocked: completed.includes('side_apprentice_1') && history.includes('app_choice_teach') && day >= 6,
-            reason: '需第8天且有师徒情'
-        }),
+        unlockCondition: (day, stats, completed, history, completedAt, failedAt) => {
+            if (failedAt['side_apprentice_good'] && day <= failedAt['side_apprentice_good'] + 1) {
+                return { unlocked: false, reason: '需冷却' };
+            }
+            return {
+                unlocked: completed.includes('side_apprentice_1') && history.includes('app_choice_teach') && day >= 6,
+                reason: '需第8天且有师徒情'
+            };
+        },
         choices: [
             {
                 id: 'app_choice_accept',
@@ -89,7 +99,7 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
                     }
                     return {
                         changes: { health: -5, satiety: -5 },
-                        message: '鸽子好像不太新鲜...你吃完后拉肚子了。徒弟一脸愧疚。',
+                        message: '鸽子好像不太新鲜...你吃完后拉肚子了。徒弟一脸愧疚。（过两天再试试）',
                         success: false,
                         effectType: 'damage'
                     };
@@ -105,10 +115,15 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
         image: getImg('复仇之火', 'b91c1c'),
         type: 'SIDE_QUEST',
         allowedStages: ['CAT_LORD'], 
-        unlockCondition: (day, stats, completed, history) => ({
-            unlocked: completed.includes('side_apprentice_1') && history.includes('app_choice_rob') && day >= 6,
-            reason: '需第8天且有仇怨'
-        }),
+        unlockCondition: (day, stats, completed, history, completedAt, failedAt) => {
+            if (failedAt['side_apprentice_evil'] && day <= failedAt['side_apprentice_evil'] + 1) {
+                return { unlocked: false, reason: '需养伤' };
+            }
+            return {
+                unlocked: completed.includes('side_apprentice_1') && history.includes('app_choice_rob') && day >= 6,
+                reason: '需第8天且有仇怨'
+            };
+        },
         choices: [
             {
                 id: 'app_choice_fight',
@@ -125,7 +140,7 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
                     }
                     return {
                         changes: { health: -40, hissing: -10 },
-                        message: '你老了。它把你按在地上羞辱。“现在扯平了。”',
+                        message: '你老了。它把你按在地上羞辱。“现在扯平了。”（过两天再试试）',
                         success: false,
                         effectType: 'damage'
                     };
@@ -146,7 +161,7 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
                     }
                     return {
                         changes: { health: -10, hissing: -10 },
-                        message: '它不接受道歉，咬了你一口。',
+                        message: '它不接受道歉，咬了你一口。（过两天再试试）',
                         success: false,
                         effectType: 'damage'
                     };
@@ -164,10 +179,15 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
         image: getImg('守护者', '059669'),
         type: 'SIDE_QUEST',
         allowedStages: ['MANSION'],
-        unlockCondition: (day, stats, completed, history) => ({
-            unlocked: completed.includes('side_apprentice_good') && day >= 9,
-            reason: '需第12天且善缘'
-        }),
+        unlockCondition: (day, stats, completed, history, completedAt, failedAt) => {
+            if (failedAt['side_apprentice_mansion_good'] && day <= failedAt['side_apprentice_mansion_good'] + 1) {
+                return { unlocked: false, reason: '徒弟离去' };
+            }
+            return {
+                unlocked: completed.includes('side_apprentice_good') && day >= 9,
+                reason: '需第12天且善缘'
+            };
+        },
         choices: [
             {
                 id: 'app_choice_share_food',
@@ -195,8 +215,8 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
                     }
                     return {
                         changes: { hissing: 5 },
-                        message: '徒弟摇了摇头，转身消失在夜色中。',
-                        success: true,
+                        message: '徒弟摇了摇头，转身消失在夜色中。（过两天再试试）',
+                        success: false, // Changed to false for retry
                         effectType: 'neutral'
                     }
                 }
@@ -211,10 +231,15 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
         image: getImg('暗夜入侵', '7f1d1d'),
         type: 'SIDE_QUEST',
         allowedStages: ['MANSION'],
-        unlockCondition: (day, stats, completed, history) => ({
-            unlocked: completed.includes('side_apprentice_evil') && day >= 9,
-            reason: '需第12天且恶缘'
-        }),
+        unlockCondition: (day, stats, completed, history, completedAt, failedAt) => {
+            if (failedAt['side_apprentice_mansion_evil'] && day <= failedAt['side_apprentice_mansion_evil'] + 1) {
+                return { unlocked: false, reason: '需冷却' };
+            }
+            return {
+                unlocked: completed.includes('side_apprentice_evil') && day >= 9,
+                reason: '需第12天且恶缘'
+            };
+        },
         choices: [
             {
                 id: 'app_choice_alert',
@@ -242,7 +267,7 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
                     }
                     return {
                         changes: { health: -30, hissing: -5 },
-                        message: '你太胖了。它吃光了你的粮，还撒了泡尿。',
+                        message: '你太胖了。它吃光了你的粮，还撒了泡尿。（过两天再试试）',
                         success: false,
                         effectType: 'damage'
                     }
@@ -260,10 +285,15 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
         image: getImg('最佳拍档', 'f59e0b'),
         type: 'SIDE_QUEST',
         allowedStages: ['CELEBRITY'],
-        unlockCondition: (day, stats, completed) => ({
-            unlocked: completed.includes('side_apprentice_mansion_good') && day >= 13,
-            reason: '需第13天且连心'
-        }),
+        unlockCondition: (day, stats, completed, history, completedAt, failedAt) => {
+            if (failedAt['side_apprentice_celeb_good'] && day <= failedAt['side_apprentice_celeb_good'] + 1) {
+                return { unlocked: false, reason: '需冷却' };
+            }
+            return {
+                unlocked: completed.includes('side_apprentice_mansion_good') && day >= 13,
+                reason: '需第13天且连心'
+            };
+        },
         choices: [
             {
                 id: 'app_choice_collab',
@@ -280,7 +310,7 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
                     }
                     return {
                         changes: { hissing: 2, smarts: -2 },
-                        message: '徒弟太紧张了，在镜头前炸毛，把场面搞砸了。',
+                        message: '徒弟太紧张了，在镜头前炸毛，把场面搞砸了。（过两天再试试）',
                         success: false,
                         effectType: 'neutral'
                     };
@@ -296,10 +326,15 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
         image: getImg('直播事故', '991b1b'),
         type: 'SIDE_QUEST',
         allowedStages: ['CELEBRITY'],
-        unlockCondition: (day, stats, completed) => ({
-            unlocked: completed.includes('side_apprentice_mansion_evil') && day >= 13,
-            reason: '需第13天且宿怨'
-        }),
+        unlockCondition: (day, stats, completed, history, completedAt, failedAt) => {
+            if (failedAt['side_apprentice_celeb_evil'] && day <= failedAt['side_apprentice_celeb_evil'] + 1) {
+                return { unlocked: false, reason: '需冷却' };
+            }
+            return {
+                unlocked: completed.includes('side_apprentice_mansion_evil') && day >= 13,
+                reason: '需第13天且宿怨'
+            };
+        },
         choices: [
             {
                 id: 'app_choice_ignore_hater',
@@ -315,8 +350,8 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
                         }
                     }
                     return {
-                        changes: { hissing: 5, health: -5 },
-                        message: '观众被噪音吵走了。你压力过大脱发。',
+                        changes: { hissing: 5, health: -10 },
+                        message: '观众被噪音吵走了。你压力过大脱发。（过两天再试试）',
                         success: false,
                         effectType: 'damage'
                     }
@@ -325,9 +360,9 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
             {
                 id: 'app_choice_expose',
                 text: '隔窗对骂',
-                calculateChance: (stats) => 80,
+                calculateChance: (stats) => 100,
                 effect: (stats) => ({
-                    changes: { hissing: 20, smarts: -10 }, // Stage 4: Massive hiss gain for breaking character
+                    changes: { hissing: 30, smarts: -10 }, // Stage 4: Massive hiss gain for breaking character
                     message: '你疯狂哈气展示野性。直播间人气爆炸！猫设崩了，但你爽了。',
                     success: true,
                     effectType: 'damage'

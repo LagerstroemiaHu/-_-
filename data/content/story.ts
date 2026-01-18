@@ -5,7 +5,6 @@ import { roll, pick, getImg } from '../utils';
 export const STORY_QUESTS: GameEvent[] = [
     // ==========================================
     // STAGE 1 -> 2: 街头 -> 猫王
-    // 恢复为标准的武力挑战或智力取胜，移除徒弟人质/助战情节
     // ==========================================
     {
         id: 'stage_cat_lord',
@@ -13,7 +12,10 @@ export const STORY_QUESTS: GameEvent[] = [
         description: '月圆之夜，垃圾场。现任老大“独眼龙”站在高处。如果你想在这片街区立足，就必须击败它。',
         image: getImg('猫领主', '4c1d95'),
         type: 'STAGE',
-        unlockCondition: (day, stats) => {
+        unlockCondition: (day, stats, completed, history, completedAt, failedAt) => {
+            if (failedAt['stage_cat_lord'] && day <= failedAt['stage_cat_lord'] + 2) {
+                return { unlocked: false, reason: '战败需养伤(冷却中)' };
+            }
             const unlocked = day >= 4 && stats.hissing > 30;
             let reason = '';
             if (day < 4) reason = '需第4天';
@@ -39,7 +41,7 @@ export const STORY_QUESTS: GameEvent[] = [
                      }
                      return { 
                          changes: { health: -20, hissing: -5, satiety: -10 }, 
-                         message: '你被打败了。独眼龙把你按在地上摩擦，你的威严扫地。', 
+                         message: '你被打败了。独眼龙把你按在地上摩擦，你的威严扫地。（过两天再来挑战）', 
                          success: false, 
                          effectType: 'damage', 
                          sound: 'impact' 
@@ -63,7 +65,7 @@ export const STORY_QUESTS: GameEvent[] = [
                     }
                     return { 
                         changes: { hissing: -5, smarts: -2 }, 
-                        message: '你的演讲太无聊了，所有猫都睡着了。独眼龙醒来后把你赶走了。', 
+                        message: '你的演讲太无聊了，所有猫都睡着了。独眼龙醒来后把你赶走了。（过两天再来挑战）', 
                         success: false, 
                         effectType: 'neutral' 
                     };
@@ -74,7 +76,6 @@ export const STORY_QUESTS: GameEvent[] = [
 
     // ==========================================
     // STAGE 2 -> 3: 猫王 -> 豪宅
-    // 恢复为标准的潜入或碰瓷，移除恋爱线抉择
     // ==========================================
     {
         id: 'stage_mansion',
@@ -82,11 +83,14 @@ export const STORY_QUESTS: GameEvent[] = [
         description: '那扇传说中的落地窗竟然没关！屋里透出暖气和金枪鱼的味道。这是改变阶级的机会。',
         image: getImg('闯入豪宅', '0284c7'),
         type: 'STAGE',
-        unlockCondition: (day, stats) => {
+        unlockCondition: (day, stats, completed, history, completedAt, failedAt) => {
+             if (failedAt['stage_mansion'] && day <= failedAt['stage_mansion'] + 2) {
+                return { unlocked: false, reason: '需等待时机(冷却中)' };
+             }
              const unlocked = day >= 8 && stats.hissing < 40;
              let reason = '';
-             if (day < 8) reason = '需第8天';
-             else if (stats.hissing >= 40) reason = '需温顺(哈气<40)';
+             if (day < 8) reason = '需第8天且哈气<40'; 
+             else if (stats.hissing >= 40) reason = '需哈气<40 (太野无法入户)';
              return { unlocked, reason };
         },
         choices: [
@@ -106,7 +110,7 @@ export const STORY_QUESTS: GameEvent[] = [
                  }
                  return { 
                      changes: { health: -15, hissing: 5 }, 
-                     message: '刚进门就被扫地机器人撞飞了。豪宅不是那么好进的。', 
+                     message: '刚进门就被扫地机器人撞飞了。豪宅不是那么好进的。（过两天再试试）', 
                      success: false, 
                      effectType: 'damage', 
                      sound: 'impact' 
@@ -130,7 +134,7 @@ export const STORY_QUESTS: GameEvent[] = [
                 }
                 return { 
                     changes: { hissing: 5, satiety: -5 }, 
-                    message: '园丁用水管滋了你一身。你的卖惨表演失败了。', 
+                    message: '园丁用水管滋了你一身。你的卖惨表演失败了。（过两天再试试）', 
                     success: false, 
                     effectType: 'damage' 
                 };
@@ -148,12 +152,15 @@ export const STORY_QUESTS: GameEvent[] = [
         description: '一个拿着手机的年轻人盯上了你。镜头的反光映出你圆润的脸庞。',
         image: getImg('网红耄耋', 'be123c'),
         type: 'STAGE',
-        unlockCondition: (day, stats) => {
+        unlockCondition: (day, stats, completed, history, completedAt, failedAt) => {
+            if (failedAt['stage_influencer'] && day <= failedAt['stage_influencer'] + 2) {
+                return { unlocked: false, reason: '需等待热度重燃(冷却中)' };
+            }
             const unlocked = day >= 12 && stats.smarts > 50 && stats.health > 30;
             let reason = '';
             if (day < 12) reason = '需第12天';
-            else if (stats.smarts <= 50) reason = '需聪明>70';
-            else if (stats.health <= 30) reason = '需健康>70';
+            else if (stats.smarts <= 50) reason = '需智力>50';
+            else if (stats.health <= 30) reason = '需健康>30';
             return { unlocked, reason };
         },
         choices: [
@@ -172,7 +179,7 @@ export const STORY_QUESTS: GameEvent[] = [
                      sound: 'shutter'
                  }
                }
-               return { changes: { hissing: 3 }, message: '你摆了个姿势，结果打了个喷嚏。视频没火，只有黑粉在嘲笑你。', success: false, effectType: 'neutral' }
+               return { changes: { hissing: 3 }, message: '你摆了个姿势，结果打了个喷嚏。视频没火，只有黑粉在嘲笑你。（过两天再试试）', success: false, effectType: 'neutral' }
             }
           },
           {
@@ -191,7 +198,7 @@ export const STORY_QUESTS: GameEvent[] = [
                         sound: 'typewriter'
                     };
                 }
-                return { changes: { smarts: -5 }, message: '你盯着镜头看太久，变成了斗鸡眼。大家觉得你是个傻子。', success: false, effectType: 'neutral' };
+                return { changes: { smarts: -5 }, message: '你盯着镜头看太久，变成了斗鸡眼。大家觉得你是个傻子。（过两天再试试）', success: false, effectType: 'neutral' };
             }
           },
           {
@@ -199,17 +206,17 @@ export const STORY_QUESTS: GameEvent[] = [
             text: '高冷：不理睬',
             calculateChance: (stats) => 90,
             effect: (stats) => {
-                // 拒绝进阶，保持现状
+                // 拒绝进阶，保持现状，但也进入冷却
                 if (roll(90)) {
                     return { 
                         changes: { hissing: 5, smarts: 2 }, 
-                        message: '你全程背对着镜头舔屁股。年轻人无奈地走了。你守住了豪宅猫的清静，拒绝了流量的喧嚣。', 
-                        success: false, // 拒绝进阶
+                        message: '你全程背对着镜头舔屁股。年轻人无奈地走了。你守住了豪宅猫的清静。（若想成名，过两天再试试）', 
+                        success: false, // 标记为失败以触发冷却，但不造成严重惩罚
                         effectType: 'neutral', 
                         sound: 'hiss' 
                     };
                 }
-                return { changes: { hissing: 2 }, message: '你的不理不睬被解读为“无趣”。拍摄失败。', success: false, effectType: 'neutral' };
+                return { changes: { hissing: 2 }, message: '你的不理不睬被解读为“无趣”。拍摄失败。（过两天再试试）', success: false, effectType: 'neutral' };
             }
           }
         ]
@@ -220,10 +227,15 @@ export const STORY_QUESTS: GameEvent[] = [
         description: '年轻人想让你穿“招财猫”红马甲直播卖猫粮。这是彻底变现的机会。',
         image: getImg('明星带货', 'fbbf24'),
         type: 'STAGE',
-        unlockCondition: (day, stats) => ({
-            unlocked: day >= 14,
-            reason: day < 14 ? '需等待至第14天' : undefined
-        }),
+        unlockCondition: (day, stats, completed, history, completedAt, failedAt) => {
+            if (failedAt['stage_sales'] && day <= failedAt['stage_sales'] + 2) {
+                return { unlocked: false, reason: '直播整改中(冷却中)' };
+            }
+            return {
+                unlocked: day >= 14,
+                reason: day < 14 ? '需等待至第14天' : undefined
+            };
+        },
         choices: [
           {
             id: 'cooperate',
@@ -233,7 +245,7 @@ export const STORY_QUESTS: GameEvent[] = [
                  if (roll(Math.min(30, 10 + stats.smarts * 0.3 + (100 - stats.satiety) * 0.2))) {
                      return { changes: { health: 15, satiety: 30, smarts: 5 }, message: '真香！弹幕都在刷礼物。尊严换来了最好的金枪鱼。你彻底融入了人类社会。', success: true, effectType: 'heal', sound: 'meow' };
                  }
-                 return { changes: { hissing: 20, satiety: 20 }, message: '直播事故！你吐了。品牌方解约。你搞砸了。', success: false, effectType: 'damage', sound: 'fail' };
+                 return { changes: { hissing: 20, satiety: 20 }, message: '直播事故！你吐了。品牌方解约。你搞砸了。（过两天再试试，如果还有机会的话）', success: false, effectType: 'damage', sound: 'fail' };
             }
           },
           {
@@ -244,13 +256,19 @@ export const STORY_QUESTS: GameEvent[] = [
                   if (roll(Math.min(50, stats.hissing * 0.5))) {
                       return { 
                           changes: { hissing: 30, smarts: 5, satiety: -10 }, 
-                          message: '你撕烂了马甲，从窗户跳了出去！去他的流量，去他的罐头！我是圆头，我是自由的！(你逃回了街头，但这也许是你想要的结局)', 
+                          message: '你撕烂了马甲，从窗户跳了出去！去他的流量，去他的罐头！我是圆头，我是自由的！(你回到了街头，获得成就：自由之翼)', 
                           success: true, 
                           effectType: 'neutral', 
+                          stageUnlock: 'STRAY', // 回归街头
                           sound: 'impact' 
                       };
                   }
-                  return { changes: { hissing: 10, satiety: -10 }, message: '你想跑，但被抓了回来。现在你被关在笼子里直播。', success: false, effectType: 'damage' };
+                  return { 
+                      changes: { hissing: 10, satiety: -10 }, 
+                      message: '你想跑，但被抓了回来。现在你被关在笼子里直播。(你成为了赚钱机器，获得成就：笼中困兽)', 
+                      success: false, // 失败，但触发特殊成就
+                      effectType: 'damage' 
+                  };
               }
           }
         ]

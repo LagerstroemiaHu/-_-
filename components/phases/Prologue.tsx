@@ -130,9 +130,10 @@ export const Prologue: React.FC<Props> = ({ onComplete, onBack }) => {
                             <div 
                                 key={panel.id}
                                 className={`
-                                    relative border-[4px] border-white bg-black overflow-hidden transition-all duration-500 ease-out
+                                    relative border-[4px] border-white overflow-hidden transition-all duration-500 ease-out
                                     ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}
                                     ${!isCurrent && isVisible ? 'grayscale brightness-50' : 'grayscale-0'}
+                                    ${panel.stat.color} 
                                 `}
                             >
                                 {/* 图片层 */}
@@ -140,7 +141,7 @@ export const Prologue: React.FC<Props> = ({ onComplete, onBack }) => {
                                     <img 
                                         src={panel.image} 
                                         alt={`Panel ${panel.id}`} 
-                                        className="w-full h-full object-cover"
+                                        className={`w-full h-full object-cover transition-opacity duration-300 ${!isCurrent && isVisible ? 'opacity-50 mix-blend-multiply' : 'opacity-100'}`}
                                     />
                                     {/* 漫画速度线遮罩特效 */}
                                     {isCurrent && (

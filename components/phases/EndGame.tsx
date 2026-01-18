@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { EndingType } from '../../types';
 import { ENDING_REGISTRY } from '../../data/endings';
 import { audioManager } from '../../utils/audio';
-import { Trophy, RefreshCw, MousePointerClick } from 'lucide-react';
+import { Trophy, RefreshCw, MousePointerClick, Share2 } from 'lucide-react';
 
 interface Props {
     ending: EndingType | null; // 主结局
@@ -22,13 +22,27 @@ export const EndGame: React.FC<Props> = ({ ending, achievements, isVictory, onRe
     // 判断当前选中的是否是本轮的主结局
     const isMainEnding = selectedId === ending;
     
-    // 列表显示未被选中的其他成就 (Swaps items)
-    const listItems = achievements.filter(id => id !== selectedId);
+    // 显示所有获得的成就，不进行过滤
+    const listItems = achievements;
+
+    const handleShare = () => {
+        audioManager.playSfx('shutter');
+        alert("📸 喵生回忆已保存到相册（模拟）");
+    };
 
     return (
         <div className="fixed inset-0 z-[120] bg-stone-900/95 flex flex-col items-center justify-center p-4 overflow-y-auto animate-in custom-scrollbar">
-            <div className="w-full max-w-2xl flex flex-col gap-6 my-auto py-10">
+            <div className="w-full max-w-2xl flex flex-col gap-6 my-auto py-10 relative">
                 
+                {/* Share Button (Floating) */}
+                <button 
+                    onClick={handleShare}
+                    className="absolute top-4 right-0 z-50 bg-white border-4 border-black p-2 shadow-[4px_4px_0px_0px_white] hover:scale-110 active:scale-95 transition-all text-black hover:bg-amber-400"
+                    title="分享结局"
+                >
+                    <Share2 size={24} strokeWidth={3} />
+                </button>
+
                 {/* Main Display Card */}
                 {selectedConfig && (
                     <div className="bg-white border-[8px] border-black p-6 shadow-[15px_15px_0px_0px_#fbbf24] relative transform rotate-1 transition-all duration-300">
@@ -69,12 +83,18 @@ export const EndGame: React.FC<Props> = ({ ending, achievements, isVictory, onRe
                                 const config = ENDING_REGISTRY[achId];
                                 const Icon = config.icon;
                                 const isMainForList = achId === ending;
+                                const isSelected = achId === selectedId;
 
                                 return (
                                     <button 
                                         key={achId} 
                                         onClick={() => { audioManager.playClick(); setSelectedId(achId); }}
-                                        className="bg-stone-800 border-l-4 border-stone-600 hover:border-amber-400 hover:bg-stone-700 p-3 flex items-center gap-3 shadow-lg transition-all active:translate-x-1 text-left group w-full"
+                                        className={`
+                                            border-l-4 p-3 flex items-center gap-3 shadow-lg transition-all active:translate-x-1 text-left group w-full
+                                            ${isSelected 
+                                                ? 'bg-stone-700 border-amber-500 ring-2 ring-white/50 scale-[1.02] z-10' 
+                                                : 'bg-stone-800 border-stone-600 hover:border-amber-400 hover:bg-stone-700 opacity-90 hover:opacity-100'}
+                                        `}
                                     >
                                         <div className={`p-2 bg-stone-900 rounded-full ${config.color} group-hover:scale-110 transition-transform`}>
                                             <Icon size={20} />
@@ -83,7 +103,7 @@ export const EndGame: React.FC<Props> = ({ ending, achievements, isVictory, onRe
                                             <div className={`font-black text-xs uppercase tracking-wider ${isMainForList ? 'text-amber-500' : 'text-stone-500 group-hover:text-amber-200'}`}>
                                                 {isMainForList ? 'MAIN ENDING' : 'ACHIEVEMENT'}
                                             </div>
-                                            <div className="text-white font-bold text-sm group-hover:text-amber-50">{config.title}</div>
+                                            <div className={`font-bold text-sm ${isSelected ? 'text-amber-400' : 'text-white group-hover:text-amber-50'}`}>{config.title}</div>
                                         </div>
                                     </button>
                                 );

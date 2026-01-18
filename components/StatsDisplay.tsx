@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { GameStats } from '../types';
 import { Heart, Fish, Zap, Brain } from 'lucide-react';
@@ -5,6 +6,7 @@ import { Heart, Fish, Zap, Brain } from 'lucide-react';
 interface Props {
   stats: GameStats;
   className?: string;
+  highlightedLabel?: string | null;
 }
 
 const StatBar = ({
@@ -12,13 +14,15 @@ const StatBar = ({
   value,
   color,
   label,
-  statKey
+  statKey,
+  isHighlighted
 }: {
   icon: any,
   value: number,
   color: string,
   label: string,
-  statKey: keyof GameStats
+  statKey: keyof GameStats,
+  isHighlighted?: boolean
 }) => {
     const [particles, setParticles] = useState<any[]>([]);
     const prevValue = useRef(value);
@@ -98,21 +102,21 @@ const StatBar = ({
     }, [value, statKey]);
 
     return (
-        <div className="flex flex-col flex-1 h-full justify-center px-1 md:px-2 border-r-[3px] md:border-r-[4px] border-black last:border-r-0 bg-white relative">
+        <div className={`flex flex-col flex-1 h-full justify-center px-1 md:px-2 border-r-[3px] md:border-r-[4px] border-black last:border-r-0 bg-white relative transition-all duration-200 ${isHighlighted ? 'z-20 scale-105 shadow-xl ring-2 ring-black' : ''}`}>
             {/* Header */}
             <div className="flex justify-between items-end mb-1 z-10 relative">
                 <div className="flex items-center gap-1">
-                    <Icon size={14} className="text-black shrink-0" strokeWidth={3} />
-                    <span className="text-[10px] md:text-xs font-black uppercase leading-none tracking-tighter truncate">{label}</span>
+                    <Icon size={14} className={`text-black shrink-0 transition-transform duration-200 ${isHighlighted ? 'scale-125' : ''}`} strokeWidth={3} />
+                    <span className={`text-[10px] md:text-xs font-black uppercase leading-none tracking-tighter truncate transition-colors duration-200 ${isHighlighted ? 'text-amber-600' : ''}`}>{label}</span>
                 </div>
-                <span className="text-sm md:text-xl font-black font-mono leading-none">{Math.round(value)}</span>
+                <span className={`text-sm md:text-xl font-black font-mono leading-none transition-transform duration-200 ${isHighlighted ? 'scale-110' : ''}`}>{Math.round(value)}</span>
             </div>
 
             {/* Bar Container */}
             <div className="w-full h-2 md:h-3 border-[3px] border-black bg-stone-200 relative shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] group">
                  {/* Fill */}
                 <div
-                    className={`h-full transition-all duration-500 ease-out ${color} ${value < 30 ? 'animate-pulse' : ''} relative`}
+                    className={`h-full transition-all duration-500 ease-out ${color} ${value < 30 || isHighlighted ? 'animate-pulse' : ''} relative`}
                     style={{ width: `${Math.max(0, Math.min(100, value))}%` }}
                 >
                     {/* The particles will use the color of this element via the class */}
@@ -133,13 +137,13 @@ const StatBar = ({
     );
 };
 
-const StatsDisplay: React.FC<Props> = ({ stats, className = '' }) => {
+const StatsDisplay: React.FC<Props> = ({ stats, className = '', highlightedLabel }) => {
   return (
     <div className={`flex h-full w-full ${className}`}>
-        <StatBar icon={Heart} value={stats.health} color="bg-rose-500" label="健康" statKey="health" />
-        <StatBar icon={Fish} value={stats.satiety} color="bg-amber-500" label="饱腹" statKey="satiety" />
-        <StatBar icon={Zap} value={stats.hissing} color="bg-purple-600" label="哈气" statKey="hissing" />
-        <StatBar icon={Brain} value={stats.smarts} color="bg-blue-500" label="智力" statKey="smarts" />
+        <StatBar icon={Heart} value={stats.health} color="bg-rose-500" label="健康" statKey="health" isHighlighted={highlightedLabel === '健康'} />
+        <StatBar icon={Fish} value={stats.satiety} color="bg-amber-500" label="饱腹" statKey="satiety" isHighlighted={highlightedLabel === '饱腹'} />
+        <StatBar icon={Zap} value={stats.hissing} color="bg-purple-600" label="哈气" statKey="hissing" isHighlighted={highlightedLabel === '哈气'} />
+        <StatBar icon={Brain} value={stats.smarts} color="bg-blue-500" label="智力" statKey="smarts" isHighlighted={highlightedLabel === '智力'} />
     </div>
   );
 };

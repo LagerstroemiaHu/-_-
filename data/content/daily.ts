@@ -14,7 +14,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
     choices: [
         {
             id: 'deep_sleep',
-            text: '深度睡眠',
+            text: '深度睡眠 (++健康)',
             calculateChance: (stats) => 80,
             effect: (stats) => {
                 if (roll(80)) {
@@ -37,7 +37,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
         },
         {
             id: 'light_nap',
-            text: '浅睡打盹',
+            text: '浅睡打盹 (+健康)',
             calculateChance: (stats) => 90,
             effect: (stats) => {
                 if (roll(90)) {
@@ -68,7 +68,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
     choices: [
         {
             id: 'philosophical_study',
-            text: '研究逻辑 (智力+)',
+            text: '研究逻辑 (++智力)',
             calculateChance: (stats) => Math.min(95, 30 + stats.smarts * 0.7),
             effect: (stats) => {
                 if (roll(30 + stats.smarts * 0.7)) {
@@ -89,7 +89,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
         },
         {
             id: 'imitate_silly',
-            text: '模仿傻事 (智力-)',
+            text: '模仿傻事 (--智力)',
             calculateChance: (stats) => 100, // 保持为纯娱乐选项，100%成功（因为变蠢本身就是一种“失败”）
             effect: (stats) => {
                 const msg = pick([
@@ -112,7 +112,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
     choices: [
         {
             id: 'full_service',
-            text: '全身大洗护',
+            text: '全身大洗护 (++哈气)',
             calculateChance: (stats) => 74,
             effect: (stats) => {
                 if (roll(74)) {
@@ -121,7 +121,8 @@ export const DAILY_ACTIONS: GameEvent[] = [
                         '全套洗护完成！你现在看起来简直可以去拍猫粮广告，哈气值上涨。',
                         '这种自律让你感到自豪。你找回了当年作为“街区第一帅猫”的感觉。'
                     ]);
-                    return { changes: { health: 5, hissing: 3, smarts: 2 }, message: msg, success: true, effectType: 'heal' };
+                    // 修改：增加更多哈气
+                    return { changes: { health: 5, hissing: 5, smarts: 2 }, message: msg, success: true, effectType: 'heal' };
                 }
                 const failMsg = pick([
                     '你不小心吞下了太多猫毛。现在你一直在干呕，感觉胃里结了个大球。',
@@ -133,16 +134,17 @@ export const DAILY_ACTIONS: GameEvent[] = [
         },
         {
             id: 'focus_round_head',
-            text: '重点打理头部',
+            text: '重点打理头部 (--哈气)',
             calculateChance: (stats) => 83,
             effect: (stats) => {
                 if (roll(83)) {
                     const msg = pick([
-                        '你精准地打理了头顶的毛发。完美，依旧是那个让无数猫咪仰望的大佬。',
-                        '只要头够圆/亮，世界就没法打败我。你感觉自信心爆棚。',
-                        '简单的打理让你看起来神清气爽。这种优雅是骨子里透出来的。'
+                        '你精准地打理了头顶的毛发。现在看起来圆润可爱，少了几分戾气。',
+                        '只要头够圆，人类就会觉得你没有威胁。这是一种伪装的智慧。',
+                        '简单的打理让你看起来神清气爽，但也让你看起来更像个家猫胚子。'
                     ]);
-                    return { changes: { hissing: 3, smarts: 2 }, message: msg, success: true, effectType: 'neutral' };
+                    // 修改：减少哈气值
+                    return { changes: { hissing: -5, smarts: 2 }, message: msg, success: true, effectType: 'neutral' };
                 }
                 const failMsg = pick([
                     '怎么弄都不满意，你开始怀疑是不是最近翻垃圾桶吃胖了。',
@@ -167,7 +169,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
     choices: [
         {
             id: 'wild_roar',
-            text: '练习咆哮 (哈气+)',
+            text: '练习咆哮 (++哈气)',
             calculateChance: (stats) => Math.min(95, 40 + stats.health * 0.5),
             effect: (stats) => {
                 if (roll(50 + stats.health * 0.5+stats.hissing * 0.5)) {
@@ -188,10 +190,10 @@ export const DAILY_ACTIONS: GameEvent[] = [
         },
         {
             id: 'practice_purr',
-            text: '练习夹子音 (哈气-)',
-            calculateChance: (stats) => 90, // 修改：从100%降为90%
+            text: '练习夹子音 (--哈气)',
+            calculateChance: (stats) => 80, // 修改：从100%降为90%
             effect: (stats) => {
-                if (roll(90)) {
+                if (roll(80)) {
                     const msg = pick([
                         '你对着空气练习“喵~”。声音软糯，你自己都起鸡皮疙瘩了。野性大幅下降。',
                         '你尝试收起獠牙，做出无辜的表情。为了生存，不寒碜。',
@@ -220,10 +222,10 @@ export const DAILY_ACTIONS: GameEvent[] = [
     choices: [
         {
             id: 'deep_dive',
-            text: '深入挖掘',
-            calculateChance: (stats) => Math.min(85, 50 + stats.health * 0.4),
+            text: '深入挖掘 (++饱腹)',
+            calculateChance: (stats) => Math.min(85, 50 + stats.health * 0.4+ stats.smarts * 0.2),
             effect: (stats) => {
-                if (roll(50 + stats.health * 0.4)) {
+                if (roll(50 + stats.health * 0.4 + stats.smarts * 0.2)) {
                     const msg = pick([
                         '你在最底下找到了半个汉堡！而且还没发霉。',
                         '一整袋炸鸡骨头！虽然有点脏，但肉很多。',
@@ -241,7 +243,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
         },
         {
             id: 'safe_pick',
-            text: '表面搜寻',
+            text: '表面搜寻 (+饱腹)',
             calculateChance: (stats) => Math.min(95, 70 + stats.smarts * 0.3),
             effect: (stats) => {
                 if (roll(70 + stats.smarts * 0.3)) {
@@ -269,7 +271,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
     choices: [
         {
             id: 'chase',
-            text: '极速追杀',
+            text: '极速追杀 (++饱腹)',
             calculateChance: (stats) => Math.min(90, 40 + stats.health * 0.5 + stats.hissing * 0.5),
             effect: (stats) => {
                 if (roll(40 + stats.health * 0.5 + stats.hissing * 0.5)) {
@@ -290,7 +292,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
         },
         {
             id: 'ambush',
-            text: '耐心伏击',
+            text: '耐心伏击 (+饱腹)',
             calculateChance: (stats) => Math.min(85, 30 + stats.smarts * 0.6),
             effect: (stats) => {
                  if (roll(30 + stats.smarts * 0.6)) {
@@ -322,7 +324,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
     choices: [
         {
             id: 'hardcore',
-            text: '极限跑酷',
+            text: '极限跑酷 (++健康)',
             calculateChance: (stats) => Math.min(85, 40 + stats.health * 0.8),
             effect: (stats) => {
                 if (stats.health < 30) return { changes: { health: -15 }, message: '你的身体承受不住这种强度，摔得很惨。', success: false, effectType: 'damage', sound: 'impact' };
@@ -332,7 +334,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                         '连续跳过三个垃圾桶，动作行云流水，引来路人侧目。',
                         '你成功爬上了最高的树枝，俯瞰众生。'
                     ]);
-                    return { changes: { health: 8, satiety: -5, hissing: 4 }, message: msg, success: true, effectType: 'neutral' };
+                    return { changes: { health: 12, satiety: -5, hissing: 5 }, message: msg, success: true, effectType: 'neutral' };
                 }
                 const failMsg = pick([
                     '步子迈大了，扯到了...总之你摔了下来。',
@@ -344,7 +346,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
         },
         {
             id: 'stretch',
-            text: '伸展运动',
+            text: '伸展运动 (+健康)',
             calculateChance: (stats) => 85,
             effect: (stats) => {
                 if (roll(85)) {
@@ -353,7 +355,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                         '拉伸了一下身体，感觉经络通畅了。',
                         '简单地磨了磨爪子，伸了个腰。'
                     ]);
-                    return { changes: { health: 5, satiety: -2 }, message: msg, success: true, effectType: 'heal' };
+                    return { changes: { health: 6, satiety: -2 }, message: msg, success: true, effectType: 'heal' };
                 }
                 const failMsg = pick([
                     '拉伸过度，腿抽筋了。',
@@ -376,7 +378,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
     choices: [
         {
             id: 'rub_legs',
-            text: '疯狂蹭腿',
+            text: '疯狂蹭腿 (++饱腹)',
             calculateChance: (stats) => Math.min(90, 50 + (100 - stats.hissing) * 0.5),
             effect: (stats) => {
                 if(roll(50 + (100 - stats.hissing) * 0.5)) {
@@ -385,7 +387,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                         '你成功把毛蹭到了路人的黑裤子上，作为交换，他给了你半个汉堡。',
                         '一位老奶奶觉得你太可怜了，特意去便利店给你买了罐头。'
                     ]);
-                    return { changes: { satiety: 12, hissing: -5 }, message: msg, success: true, effectType: 'heal', sound: 'meow' };
+                    return { changes: { satiety: 10, hissing: -5 }, message: msg, success: true, effectType: 'heal', sound: 'meow' };
                 }
                 const failMsg = pick([
                     '“走开！”路人嫌你脏，踢了你一脚。',
@@ -397,7 +399,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
         },
         {
             id: 'meow_distance',
-            text: '远距离卖萌',
+            text: '远距离卖萌 (+饱腹)',
             calculateChance: (stats) => 90,
             effect: (stats) => {
                 if (roll(90)) {
@@ -406,7 +408,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                         '虽然没人停下来，但你在垃圾桶旁捡到了路人掉落的饼干。',
                         '保持距离让你感到安全，虽然收获不多。'
                     ]);
-                    return { changes: { satiety: 6, hissing: -2 }, message: msg, success: true, effectType: 'heal', sound: 'meow' };
+                    return { changes: { satiety: 6, hissing: -3 }, message: msg, success: true, effectType: 'heal', sound: 'meow' };
                 }
                 const failMsg = pick([
                     '你叫破了喉咙也没人理你。',
@@ -421,7 +423,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
   {
     id: 'fight_stray',
     title: '争抢地盘',
-    description: '那只独耳猫越界了。你可以选择暴力驱逐（增加哈气）或者威慑。',
+    description: '那只独耳猫越界了。你可以选择暴力驱逐或者威慑。',
     image: getImg('地盘争夺', 'b91c1c'),
     type: 'DAILY',
     hints: [{ stat: '哈气', change: 'up' }, { stat: '健康', change: 'down' }],
@@ -429,7 +431,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
     choices: [
         {
             id: 'fight_hard',
-            text: '全力出击 (哈气+)',
+            text: '全力出击 (++哈气)',
             calculateChance: (stats) => Math.min(90, 40 + stats.health * 0.5+stats.hissing * 0.2),
             effect: (stats) => {
                 if(roll(40 + stats.health * 0.5+stats.hissing * 0.2)) {
@@ -438,19 +440,19 @@ export const DAILY_ACTIONS: GameEvent[] = [
                         '一阵猫毛乱飞，你骑在它身上取得了胜利。',
                         '你咬住了它的耳朵，它惨叫着逃窜。你也受了点皮外伤。'
                     ]);
-                    return { changes: { hissing: 5, health: -5 }, message: msg, success: true, effectType: 'damage', sound: 'impact' };
+                    return { changes: { hissing: 8, health: -5 }, message: msg, success: true, effectType: 'damage', sound: 'impact' };
                 }
                 const failMsg = pick([
                     '你被打得落荒而逃。耻辱！',
                     '对方比你年轻力壮，你被按在地上摩擦。',
                     '你高估了自己的牙口，咬到了石头。'
                 ]);
-                return { changes: { health: -15, hissing: -5 }, message: failMsg, success: false, effectType: 'damage', sound: 'impact' };
+                return { changes: { health: -10, hissing: -4 }, message: failMsg, success: false, effectType: 'damage', sound: 'impact' };
             }
         },
         {
             id: 'ignore_weak',
-            text: '放它一马 (哈气-)',
+            text: '放它一马 (--哈气)',
             calculateChance: (stats) => 100, // 保持100%，这是被动选择
             effect: (stats) => {
                 const msg = pick([
@@ -458,7 +460,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                     '和平共处吧。你今天的杀心不重。',
                     '你甚至让出了半个垃圾桶。你的心变软了。'
                 ]);
-                return { changes: { hissing: -3, smarts: 2 }, message: msg, success: true, effectType: 'neutral' };
+                return { changes: { hissing: -8, smarts: 4 }, message: msg, success: true, effectType: 'neutral' };
             }
         }
     ]
@@ -476,7 +478,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
       choices: [
           {
               id: 'bully',
-              text: '武力征收',
+              text: '武力征收 (++饱腹)',
               calculateChance: (stats) => Math.min(95, 20 + stats.health * 0.8),
               effect: (stats) => {
                   if (roll(20 + stats.health * 0.8)) {
@@ -497,7 +499,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
           },
           {
               id: 'protect',
-              text: '提供庇护',
+              text: '提供庇护 (--哈气)',
               calculateChance: (stats) => 90,
               effect: (stats) => {
                   if (roll(90)) {
@@ -506,14 +508,14 @@ export const DAILY_ACTIONS: GameEvent[] = [
                           '你帮它们赶走了大黄狗，它们感激地送上了鱼骨头。',
                           '公平交易。你维持了秩序，也填饱了肚子。'
                       ]);
-                      return { changes: { hissing: -10, smarts: 4, satiety: 8 }, message: msg, success: true, effectType: 'heal', sound: 'meow' };
+                      return { changes: { hissing: -6, smarts: 4, satiety: 8 }, message: msg, success: true, effectType: 'heal', sound: 'meow' };
                   }
                   const failMsg = pick([
                       '这群小猫即使被保护也不交保护费，白干一场。',
                       '你赶跑了敌人，但小猫们早就吓跑了，没拿到食物。',
                       '有个刺头说不需要你的保护，场面一度很尴尬。'
                   ]);
-                  return { changes: { hissing: -2, satiety: -5 }, message: failMsg, success: false, effectType: 'neutral' };
+                  return { changes: { hissing: -3, satiety: -5 }, message: failMsg, success: false, effectType: 'neutral' };
               }
           }
       ]
@@ -529,7 +531,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
       choices: [
           {
               id: 'wise_choice',
-              text: '公正裁决 (智力+)',
+              text: '公正裁决 (++智力)',
               calculateChance: (stats) => Math.min(90, 30 + stats.smarts * 0.7),
               effect: (stats) => {
                   if(roll(30 + stats.smarts * 0.7)) {
@@ -550,7 +552,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
           },
           {
               id: 'random_verdict',
-              text: '随缘判决 (智力-)',
+              text: '随缘判决 (--智力)',
               calculateChance: (stats) => 90, // 修改：从100%降为90%
               effect: (stats) => {
                   if (roll(90)) {
@@ -577,7 +579,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
       choices: [
           {
               id: 'mark_turf',
-              text: '疯狂标记 (哈气+)',
+              text: '疯狂标记 (++哈气)',
               calculateChance: (stats) => 90,
               effect: (stats) => {
                   if (roll(90)) {
@@ -598,7 +600,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
           },
           {
               id: 'friendly_patrol',
-              text: '温和巡视 (哈气-)',
+              text: '温和巡视 (--哈气)',
               effect: (stats) => {
                   if (roll(95)) {
                       const msg = pick([
@@ -626,7 +628,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
       choices: [
           {
               id: 'eat_premium',
-              text: '优雅进食',
+              text: '优雅进食 (++饱腹)',
               calculateChance: (stats) => 95,
               effect: (stats) => {
                   if (roll(95)) {
@@ -647,7 +649,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
           },
           {
               id: 'throw_fit',
-              text: '挑三拣四',
+              text: '挑三拣四 (++哈气)',
               calculateChance: (stats) => 85,
               effect: (stats) => {
                   if (roll(65)) {
@@ -679,7 +681,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
       choices: [
           {
               id: 'cooperate',
-              text: '配合拍摄',
+              text: '配合拍摄 (++饱腹)',
               calculateChance: (stats) => Math.min(90, 30 + stats.smarts * 0.5),
               effect: (stats) => {
                   if (roll(50)) {
@@ -700,7 +702,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
           },
           {
               id: 'rebel',
-              text: '罢工抗议',
+              text: '罢工抗议 (++哈气)',
               calculateChance: (stats) => 90,
               effect: (stats) => {
                    if (roll(90)) {
@@ -732,7 +734,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
       choices: [
           {
               id: 'shred_it',
-              text: '疯狂抓挠 (哈气+)',
+              text: '疯狂抓挠 (++哈气)',
               calculateChance: (stats) => Math.min(95, 50 + stats.hissing * 0.5),
               effect: (stats) => {
                   if (roll(50 + stats.hissing * 0.5)) {
@@ -753,7 +755,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
           },
           {
             id: 'scratch_post',
-            text: '用猫抓板 (哈气-)',
+            text: '用猫抓板 (--哈气)',
             calculateChance: (stats) => 95,
             effect: (stats) => {
                  if (roll(95)) {
@@ -785,7 +787,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
       choices: [
           {
               id: 'run_wild',
-              text: '全屋冲刺',
+              text: '全屋冲刺 (++健康)',
               calculateChance: (stats) => Math.min(90, 40 + stats.health * 0.5),
               effect: (stats) => {
                   if (roll(40 + stats.health * 0.5)) {
@@ -806,7 +808,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
           },
           {
               id: 'parkour_furniture',
-              text: '家具跑酷',
+              text: '家具跑酷 (++健康)',
               calculateChance: (stats) => Math.min(85, 30 + stats.smarts * 0.4 + stats.health * 0.4),
               effect: (stats) => {
                   if (roll(30 + stats.smarts * 0.4 + stats.health * 0.4)) {
@@ -838,7 +840,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
       choices: [
           {
               id: 'watch',
-              text: '学习飞行轨迹 (智力+)',
+              text: '学习飞行轨迹 (++智力)',
               calculateChance: (stats) => 90,
               effect: (stats) => {
                   if (roll(90)) {
@@ -859,7 +861,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
           },
           {
               id: 'chatter',
-              text: '无能狂怒 (智力-)',
+              text: '无能狂怒 (--智力)',
               calculateChance: (stats) => 90,
               effect: (stats) => {
                   if (roll(90)) {
@@ -891,7 +893,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
       choices: [
           {
               id: 'chase',
-              text: '抓住它！',
+              text: '抓住它！ (++健康)',
               calculateChance: (stats) => Math.min(90, 40 + stats.health * 0.5),
               effect: (stats) => {
                   if (roll(50)) {
@@ -912,7 +914,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
           },
           {
               id: 'ignore',
-              text: '看破红尘',
+              text: '看破红尘 (+智力)',
               calculateChance: (stats) => 90,
               effect: (stats) => {
                   if (roll(90)) {
@@ -944,7 +946,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
       choices: [
           {
               id: 'hide',
-              text: '钻进去',
+              text: '钻进去 (+健康)',
               calculateChance: (stats) => 95,
               effect: (stats) => {
                   if (roll(95)) {
@@ -965,7 +967,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
           },
           {
               id: 'chew',
-              text: '啃咬箱子',
+              text: '啃咬箱子 (++哈气)',
               calculateChance: (stats) => 90,
               effect: (stats) => {
                   if (roll(90)) {
@@ -997,7 +999,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
       choices: [
           {
               id: 'meow_talk',
-              text: '喵喵访谈 (智力+)',
+              text: '喵喵访谈 (++智力)',
               calculateChance: (stats) => 85,
               effect: (stats) => {
                   if (roll(85)) {
@@ -1018,7 +1020,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
           },
           {
               id: 'sleep_stream',
-              text: '直播睡觉 (智力-)',
+              text: '直播睡觉 (++健康)',
               calculateChance: (stats) => 90,
               effect: (stats) => {
                   if (roll(90)) {
@@ -1050,7 +1052,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
       choices: [
           {
               id: 'accept_gifts',
-              text: '收罐头',
+              text: '收罐头 (++饱腹)',
               calculateChance: (stats) => 90,
               effect: (stats) => {
                   if (roll(90)) {
@@ -1071,7 +1073,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
           },
           {
               id: 'high_five',
-              text: '击掌',
+              text: '击掌 (++智力)',
               calculateChance: (stats) => Math.min(90, 30 + stats.smarts * 0.5),
               effect: (stats) => {
                    if (roll(50)) {
@@ -1103,7 +1105,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
       choices: [
           {
               id: 'honest',
-              text: '真实测评 (智力+)',
+              text: '真实测评 (++智力)',
               calculateChance: (stats) => 85,
               effect: (stats) => {
                    if (roll(85)) {
@@ -1124,7 +1126,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
           },
           {
               id: 'fake_praise',
-              text: '违心吹捧 (智力-)',
+              text: '违心吹捧 (--智力)',
               calculateChance: (stats) => 70,
               effect: (stats) => {
                    if (roll(70)) {
@@ -1156,7 +1158,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
       choices: [
           {
               id: 'confirm',
-              text: '炒作恋情 (哈气+)',
+              text: '炒作恋情 (++哈气)',
               calculateChance: (stats) => 80,
               effect: (stats) => {
                   if (roll(80)) {
@@ -1177,7 +1179,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
           },
           {
               id: 'deny',
-              text: '温和声明 (哈气-)',
+              text: '温和声明 (--哈气)',
               calculateChance: (stats) => 80,
               effect: (stats) => {
                   if (roll(80)) {
@@ -1209,7 +1211,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
       choices: [
           {
               id: 'attend',
-              text: '出席活动 (智力+)',
+              text: '出席活动 (++智力)',
               calculateChance: (stats) => 90,
               effect: (stats) => {
                   if (roll(90)) {
@@ -1230,7 +1232,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
           },
           {
               id: 'steal_spotlight',
-              text: '捣乱抢风头 (智力-)',
+              text: '捣乱抢风头 (--智力)',
               calculateChance: (stats) => Math.min(90, 40 + stats.hissing * 0.5),
               effect: (stats) => {
                   if (roll(Math.min(90, 40 + stats.hissing * 0.5))) {

@@ -9,7 +9,7 @@ import {
   Moon, ScrollText, Flag, Compass, Check,
   Sword, Coffee, Fish, Smartphone, Heart, Sparkles,
   Menu, Zap, Eye, AlertCircle, ArrowRight, Cat,
-  MessageSquareQuote, Volume2, VolumeX, Battery, BatteryWarning
+  MessageSquareQuote, Volume2, VolumeX, Battery, BatteryWarning, Share2
 } from 'lucide-react';
 import { TextScale } from '../../App';
 
@@ -20,6 +20,13 @@ const STAT_THEME_MAP: Record<string, { gridBg: string, footerBg: string, border:
   '哈气': { gridBg: 'bg-purple-600', footerBg: 'bg-purple-950', border: 'border-purple-500', btn: 'hover:bg-purple-500' },
   '智力': { gridBg: 'bg-blue-500', footerBg: 'bg-blue-950', border: 'border-blue-500', btn: 'hover:bg-blue-500' },
   'neutral': { gridBg: 'bg-stone-400', footerBg: 'bg-stone-900', border: 'border-stone-700', btn: 'hover:bg-stone-100' }
+};
+
+const STAT_TEXT_COLORS: Record<string, string> = {
+    '健康': 'text-rose-400',
+    '饱腹': 'text-amber-400',
+    '哈气': 'text-purple-400',
+    '智力': 'text-blue-400',
 };
 
 const SPECIAL_THEME_MAP: Record<string, { gridBg: string, footerBg: string, border: string, btn: string }> = {
@@ -117,6 +124,30 @@ export const getStageAvatar = (char: Character | null, currentStage: GameStage) 
     return char?.avatar;
 };
 
+// Helper component to render choice text with colored stat hints
+const ColoredChoiceText: React.FC<{ text: string }> = ({ text }) => {
+    // Matches patterns like "Some Text (++Health)" or "Some Text (+健康)"
+    // Captures: 1. Main text, 2. Full hint, 3. Sign (+/-), 4. Stat Name
+    const match = text.match(/(.*?)\s*(\(([+-]+)\s*(健康|饱腹|哈气|智力)\))$/);
+    
+    if (match) {
+        const [_, mainText, fullHint, sign, statName] = match;
+        const colorClass = STAT_TEXT_COLORS[statName] || 'text-white';
+        return (
+            <span className="px-1 block">
+                {mainText} <span className={`${colorClass} font-black text-[0.8em] inline-block group-hover:animate-bounce`}>{fullHint}</span>
+            </span>
+        );
+    }
+    return <span className="px-1">{text}</span>;
+};
+
+// Helper to extract stat name from text string for highlighting
+const getStatFromText = (text: string): string | null => {
+    const match = text.match(/\(([+-]+)\s*(健康|饱腹|哈气|智力)\)/);
+    return match ? match[2] : null;
+};
+
 interface Props {
     phase: GamePhase;
     day: number;
@@ -137,6 +168,7 @@ interface Props {
     isShutterActive: boolean;
     isGameOverTransitioning: boolean;
     currentNightThought: NightThought | null;
+    gameOverText: string;
     
     // Actions derived from parent
     unlockedActions: GameEvent[];
@@ -164,7 +196,7 @@ export const MainGame: React.FC<Props> = ({
     phase, day, maxDays, stats, character, stage, logs, actionPoints,
     dailyActionsTaken, currentEvent, eventResult, activeEffect,
     isShaking, isImpactShaking, isFlashActive, isStageTransitioning, isShutterActive, isGameOverTransitioning,
-    currentNightThought, unlockedActions, lockedActions, textScale,
+    currentNightThought, unlockedActions, lockedActions, textScale, gameOverText,
     onMenuOpen, onChoice, onResolutionComplete, onStartDay, onFinishGame,
     onSetEvent, onSetEventResult, onUpdateStats, onSetDay, onSetPhase
 }) => {
@@ -172,6 +204,7 @@ export const MainGame: React.FC<Props> = ({
     const [displayStage, setDisplayStage] = useState<GameStage>(stage);
     const [muted, setMuted] = useState(audioManager.isMuted);
     const [isExiting, setIsExiting] = useState(false);
+    const [hoveredStat, setHoveredStat] = useState<string | null>(null);
     
     // Action Point Consumption Animation State
     const [consumingIndex, setConsumingIndex] = useState<number | null>(null);
@@ -240,6 +273,7 @@ export const MainGame: React.FC<Props> = ({
 
     const handleChoice = (choice: Choice) => {
         audioManager.playClick();
+        setHoveredStat(null); // Reset hover state on click
         setIsExiting(true);
         setTimeout(() => {
             onChoice(choice);
@@ -254,6 +288,11 @@ export const MainGame: React.FC<Props> = ({
             onResolutionComplete();
             setIsExiting(false);
         }, 200);
+    };
+
+    const handleShare = () => {
+        audioManager.playSfx('shutter');
+        alert("📸 咔嚓！精彩瞬间已保存（模拟）");
     };
 
     const currentTheme = getEventTheme(currentEvent);
@@ -276,11 +315,11 @@ export const MainGame: React.FC<Props> = ({
             
             <GMPanel stats={stats} day={day} onUpdateStats={onUpdateStats} onSetDay={onSetDay} onTriggerEvent={(e) => { onSetEvent(e); onSetEventResult(null); }} />
 
-            <EffectsLayer isLowHealth={stats.health < 30} isLowSatiety={stats.satiety < 20} activeEffect={activeEffect} />
+            <EffectsLayer isLowHealth={stats.health < 30} isLowSatiety={stats.satiety < 20} isLowWildness={stats.hissing < 15} activeEffect={activeEffect} />
 
             {/* Game Over Curtain */}
             <div className={`curtain-top ${isGameOverTransitioning ? 'active' : ''}`}>
-                <div>GAME OVER</div>
+                <div>{gameOverText}</div>
             </div>
 
             <header className={`h-14 md:h-16 shrink-0 bg-white border-b-[4px] md:border-b-[6px] border-black flex items-stretch z-30 shadow-md ${isImpactShaking ? 'animate-impact' : ''}`}>
@@ -288,7 +327,7 @@ export const MainGame: React.FC<Props> = ({
                     <span className="text-lg md:text-2xl uppercase italic tracking-tighter">D{day}</span>
                 </div>
                 <div className="flex-1">
-                    <StatsDisplay stats={stats} />
+                    <StatsDisplay stats={stats} highlightedLabel={hoveredStat} />
                 </div>
                 <div className="flex items-center px-2 md:px-4 bg-stone-100 border-l-[2px] md:border-l-[4px] border-black gap-2">
                     <button onClick={toggleMute} onMouseEnter={() => audioManager.playHover()} className="h-8 md:h-10 w-8 md:w-10 flex items-center justify-center border-2 md:border-4 border-black bg-stone-200 font-black shadow-[2px_2px_0px_0px_black] active:translate-x-0.5 active:translate-y-0.5 hover:bg-stone-300 click-shrink hover-wiggle">
@@ -334,7 +373,7 @@ export const MainGame: React.FC<Props> = ({
                                 <div key={action.id} className="p-0.5 md:p-1 border-[1.5px] border-dashed border-stone-400 bg-white opacity-60">
                                     <div className={`font-black text-stone-600 truncate uppercase leading-none ${lockedTitleClass}`}>{action.title}</div>
                                     <div className={`font-bold text-rose-500 italic mt-0.5 leading-tight truncate ${lockedReasonClass}`}>
-                                        锁: {action.unlockCondition?.(day, stats, [], [], {}).reason || '未达要求'}
+                                        锁: {action.unlockCondition?.(day, stats, [], [], {}, {}).reason || '未达要求'}
                                     </div>
                                 </div>
                             )) : (
@@ -426,7 +465,7 @@ export const MainGame: React.FC<Props> = ({
                                         className={`
                                             w-full p-2 border-[3px] md:border-4 flex flex-col justify-center gap-1 text-center transition-all min-h-[50px] md:min-h-[70px] relative group
                                             ${currentEvent?.id === action.id ? 'translate-x-1 translate-y-1 shadow-none border-black ring-2 ring-white bg-amber-50' : 'shadow-[3px_3px_0px_0px_black] md:shadow-[5px_5px_0px_0px_black] bg-white'}
-                                            ${isGrayedOut ? 'bg-stone-200 border-stone-400 opacity-40 grayscale' : `${actionTheme.border} ${isStageAction ? 'animate-bounce-subtle ring-4 ring-amber-400/30' : 'hover:scale-[1.02] active:scale-95'}`}
+                                            ${isGrayedOut ? 'bg-stone-200 border-stone-400 opacity-40 grayscale' : `${actionTheme.border} ${isStageAction ? 'animate-pulse border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.6)] z-10' : 'hover:scale-[1.02] active:scale-95'}`}
                                             poly-button
                                         `}
                                     >
@@ -445,6 +484,7 @@ export const MainGame: React.FC<Props> = ({
                     </div>
 
                     <footer className={`shrink-0 text-white border-t-[4px] md:border-t-[6px] border-black p-2 md:p-4 flex flex-col gap-2 z-[60] transition-all duration-500 overflow-hidden h-auto min-h-[8rem] md:min-h-[10rem] ${phase === 'NIGHT_SUMMARY' ? 'bg-stone-900 grayscale-0 opacity-100' : currentTheme.footerBg} ${isImpactShaking ? 'animate-impact' : ''}`}>
+                        {/* Footer content omitted for brevity, no changes */}
                         {phase === 'NIGHT_SUMMARY' ? (
                             <div className="h-full flex flex-col justify-between animate-in p-1">
                                 <div className="flex-1 flex flex-col justify-center items-center text-center mb-2 md:mb-4 relative">
@@ -529,10 +569,17 @@ export const MainGame: React.FC<Props> = ({
                                                     key={choice.id} 
                                                     disabled={choice.condition ? !choice.condition(stats) : false}
                                                     onClick={() => handleChoice(choice)}
-                                                    onMouseEnter={() => (choice.condition ? choice.condition(stats) : true) && audioManager.playHover()}
-                                                    className={`flex-1 border-2 md:border-4 border-white bg-black/20 text-white font-black leading-none uppercase transition-all flex flex-col items-center justify-center disabled:opacity-30 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)] ${currentTheme.btn} hover:text-black active:translate-y-0.5 active:scale-95 hover:scale-105 p-1 ${choiceTextClass} click-shrink`}
+                                                    onMouseEnter={() => {
+                                                        if (choice.condition ? choice.condition(stats) : true) {
+                                                            audioManager.playHover();
+                                                            const s = getStatFromText(choice.text);
+                                                            if(s) setHoveredStat(s);
+                                                        }
+                                                    }}
+                                                    onMouseLeave={() => setHoveredStat(null)}
+                                                    className={`flex-1 border-2 md:border-4 border-white bg-black/20 text-white font-black leading-none uppercase transition-all flex flex-col items-center justify-center disabled:opacity-30 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)] ${currentTheme.btn} hover:text-black active:translate-y-0.5 active:scale-95 hover:scale-105 p-1 ${choiceTextClass} click-shrink group`}
                                                 >
-                                                    <span className="px-1">{choice.text}</span>
+                                                    <ColoredChoiceText text={choice.text} />
                                                     {chance !== null && (
                                                         <span className={`text-[0.5rem] md:text-[0.6rem] font-black mt-1 ${getChanceColor(chance)}`}>
                                                         胜算:{chance}%
@@ -553,13 +600,19 @@ export const MainGame: React.FC<Props> = ({
                 </section>
             </main>
 
-            {/* Morning Event Modal */}
+            {/* Morning Event Modal (omitted, no changes) */}
             {phase === 'MORNING_EVENT' && currentEvent && (
                 <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
                 <div className="bg-white border-[6px] border-black p-0 max-w-lg w-full shadow-[15px_15px_0px_0px_black] animate-in overflow-hidden">
                     <div className="bg-black text-white p-3 flex justify-between items-center">
                     <span className="font-black italic uppercase tracking-widest text-xs flex items-center gap-2"><Sparkles size={14} className="text-amber-400"/> Morning Event</span>
-                    <div className="px-2 py-0.5 bg-amber-400 text-black text-[10px] font-black uppercase tracking-tighter">不计入行动点</div>
+                    <button 
+                        onClick={handleShare}
+                        className="p-1 hover:bg-stone-800 rounded transition-colors text-stone-300 hover:text-white"
+                        title="分享事件"
+                    >
+                        <Share2 size={16} />
+                    </button>
                     </div>
                     
                     <div className="p-6">

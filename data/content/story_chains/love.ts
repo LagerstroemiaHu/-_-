@@ -13,7 +13,12 @@ export const LOVE_QUESTS: GameEvent[] = [
         image: getImg('哈基米', 'f472b6'),
         type: 'SIDE_QUEST',
         allowedStages: ['STRAY'],
-        unlockCondition: (day) => ({ unlocked: day >= 1, reason: '需第1天' }),
+        unlockCondition: (day, stats, completed, history, completedAt, failedAt) => {
+            if (failedAt['side_hakimi_1'] && day <= failedAt['side_hakimi_1'] + 1) {
+                return { unlocked: false, reason: '需冷却' };
+            }
+            return { unlocked: day >= 1, reason: '需第1天' };
+        },
         choices: [
             {
                 id: 'love_choice_dance',
@@ -30,8 +35,8 @@ export const LOVE_QUESTS: GameEvent[] = [
                     }
                     return {
                         changes: { hissing: 2 },
-                        message: '你踩到了她的脚。她嫌弃地看着你：“下头猫。”',
-                        success: false,
+                        message: '你踩到了她的脚。她嫌弃地看着你：“下头猫。” (过两天再试试？)',
+                        success: false, // Allows retry
                         effectType: 'damage'
                     };
                 }
@@ -42,7 +47,7 @@ export const LOVE_QUESTS: GameEvent[] = [
                 effect: (stats) => ({
                     changes: { hissing: 5 },
                     message: '你冷酷地走开了。心中无女人，拔刀自然神。',
-                    success: true,
+                    success: true, // Ends quest chain
                     effectType: 'neutral'
                 })
             }
@@ -57,15 +62,20 @@ export const LOVE_QUESTS: GameEvent[] = [
         image: getImg('甜蜜约会', 'f472b6'),
         type: 'SIDE_QUEST',
         allowedStages: ['STRAY', 'CAT_LORD'],
-        unlockCondition: (day, stats, completed, history) => ({
-            unlocked: completed.includes('side_hakimi_1') && history.includes('love_choice_dance') && day >= 7,
-            reason: '需第7天且前缘已结'
-        }),
+        unlockCondition: (day, stats, completed, history, completedAt, failedAt) => {
+            if (failedAt['side_hakimi_2'] && day <= failedAt['side_hakimi_2'] + 1) {
+                return { unlocked: false, reason: '需等待机会' };
+            }
+            return {
+                unlocked: completed.includes('side_hakimi_1') && history.includes('love_choice_dance') && day >= 7,
+                reason: '需第7天且前缘已结'
+            };
+        },
         choices: [
             {
                 id: 'love_choice_eat_cake',
                 text: '一起吃蛋糕',
-                calculateChance: (stats) => 90,
+                calculateChance: (stats) => 100,
                 effect: (stats) => ({
                     changes: { satiety: 20, health: 5, hissing: -5 },
                     message: '奶油沾在胡子上。难得的甜蜜时刻。',
@@ -76,9 +86,9 @@ export const LOVE_QUESTS: GameEvent[] = [
             {
                 id: 'love_choice_give_all',
                 text: '全让给她吃',
-                calculateChance: (stats) => 90, // 修改：从100%降为90%
+                calculateChance: (stats) => 80, // 修改：从100%降为90%
                 effect: (stats) => {
-                    if (roll(90)) {
+                    if (roll(80)) {
                         return {
                             changes: { satiety: -5, hissing: -5, smarts: 5 },
                             message: '你看着她吃完了。她感动地蹭了蹭你：“你比隔壁那只渣橘强多了。”',
@@ -88,8 +98,8 @@ export const LOVE_QUESTS: GameEvent[] = [
                     }
                     return {
                         changes: { satiety: -5, hissing: 2 },
-                        message: '她以为你不爱吃这个，觉得你很挑剔，生气地走了。',
-                        success: false,
+                        message: '她以为你不爱吃这个，觉得你很挑剔，生气地走了。(过两天再试试？)',
+                        success: false, // Retry
                         effectType: 'neutral'
                     };
                 }
@@ -105,14 +115,19 @@ export const LOVE_QUESTS: GameEvent[] = [
         image: getImg('咫尺天涯', '1e3a8a'),
         type: 'SIDE_QUEST',
         allowedStages: ['MANSION', 'CELEBRITY'],
-        unlockCondition: (day, stats, completed, history) => ({
-            unlocked: completed.includes('side_hakimi_2') && day >= 11 && !history.includes('choice_egg_surrender'),
-            reason: '需第11天且旧情未了'
-        }),
+        unlockCondition: (day, stats, completed, history, completedAt, failedAt) => {
+            if (failedAt['side_hakimi_3'] && day <= failedAt['side_hakimi_3'] + 1) {
+                return { unlocked: false, reason: '需等待雨停' };
+            }
+            return {
+                unlocked: completed.includes('side_hakimi_2') && day >= 11 && !history.includes('choice_egg_surrender'),
+                reason: '需第11天且旧情未了'
+            };
+        },
         choices: [
             {
                 id: 'love_choice_open_window',
-                text: '为她开窗 (私奔/接纳)',
+                text: '为她开窗 ',
                 calculateChance: (stats) => Math.min(90, 30 + stats.smarts * 0.6),
                 effect: (stats) => {
                     if (roll(30 + stats.smarts * 0.6)) {
@@ -125,7 +140,7 @@ export const LOVE_QUESTS: GameEvent[] = [
                     }
                     return {
                         changes: { hissing: 5, health: -5 },
-                        message: '窗户锁死了！你拼命挠玻璃。她失望地消失在雨夜中。',
+                        message: '窗户锁死了！你拼命挠玻璃。她失望地消失在雨夜中。(过两天再试试)',
                         success: false,
                         effectType: 'damage'
                     };
@@ -133,11 +148,12 @@ export const LOVE_QUESTS: GameEvent[] = [
             },
             {
                 id: 'love_choice_watch',
-                text: '隔窗相望 (现实)',
+                text: '隔窗相望',
+                calculateChance: (stats) => 100,
                 effect: (stats) => ({
                     changes: { hissing: -10, smarts: 5 }, // Giving up reduces wildness
                     message: '你没有动。两个世界的猫没有未来。她在雨中转身离去。',
-                    success: true,
+                    success: true, // End quest
                     effectType: 'neutral'
                 })
             }
@@ -152,28 +168,34 @@ export const LOVE_QUESTS: GameEvent[] = [
         image: getImg('淡淡的忧伤', '1e3a8a'),
         type: 'SIDE_QUEST',
         allowedStages: ['MANSION', 'CELEBRITY'],
-        unlockCondition: (day, stats, completed, history) => ({
-            unlocked: completed.includes('side_hakimi_2') && day >= 11 && history.includes('choice_egg_surrender'),
-            reason: '需第11天但身已残'
-        }),
+        unlockCondition: (day, stats, completed, history, completedAt, failedAt) => {
+            if (failedAt['side_hakimi_3_neutered'] && day <= failedAt['side_hakimi_3_neutered'] + 1) {
+                return { unlocked: false, reason: '需平复心情' };
+            }
+            return {
+                unlocked: completed.includes('side_hakimi_2') && day >= 11 && history.includes('choice_egg_surrender'),
+                reason: '需第11天但身已残'
+            };
+        },
         choices: [
             {
                 id: 'love_choice_show_scar',
                 text: '展示伤口 (做姐妹)',
-                calculateChance: (stats) => 95, // 修改：从100%降为95%
+                // 30% 左右的概率: 10 + 智力*0.2 + 哈气*0.2
+                calculateChance: (stats) => Math.min(80, 10 + stats.smarts * 0.2 + stats.hissing * 0.2),
                 effect: (stats) => {
-                    if (roll(95)) {
+                    if (roll(10 + stats.smarts * 0.2 + stats.hissing * 0.2)) {
                         return {
                             changes: { hissing: -10, smarts: 10 },
-                            message: '你展示了那个部位。她露出了同情的眼神，隔着玻璃贴了贴你的脸：“做姐妹也挺好。”',
+                            message: '你展示了那个部位。她露出了同情的眼神，隔着玻璃贴了贴你的脸：“做姐妹也挺好。”(达成：柏拉图之恋)',
                             success: true,
                             effectType: 'neutral'
                         };
                     }
                     return {
                         changes: { hissing: 5, health: -2 },
-                        message: '她没看懂你的意思，以为你在展示新造型，一脸困惑地走了。',
-                        success: false,
+                        message: '她没看懂你的意思，以为你在展示新造型，一脸困惑地走了。（过两天再试试）',
+                        success: false, // Retry
                         effectType: 'neutral'
                     };
                 }
@@ -184,8 +206,8 @@ export const LOVE_QUESTS: GameEvent[] = [
                 calculateChance: (stats) => 100,
                 effect: (stats) => ({
                     changes: { health: -5, hissing: -5 },
-                    message: '你躲到了沙发底下。这是一个悲伤的故事。',
-                    success: false,
+                    message: '你躲到了沙发底下。这是一个悲伤的故事，结束了。',
+                    success: true, // End quest explicitly
                     effectType: 'damage'
                 })
             }

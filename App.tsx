@@ -27,6 +27,7 @@ interface SaveData {
   stage: GameStage;
   completedEventIds: string[];
   completedAt: Record<string, number>;
+  failedAt: Record<string, number>; // New: Track failure dates
   history: string[];
   currentQuestIndex: number;
   actionPoints: number;
@@ -58,6 +59,7 @@ export default function App() {
   const [stage, setStage] = useState<GameStage>('STRAY');
   const [completedEventIds, setCompletedEventIds] = useState<string[]>([]);
   const [completedAt, setCompletedAt] = useState<Record<string, number>>({}); 
+  const [failedAt, setFailedAt] = useState<Record<string, number>>({}); // State for failures
   const [history, setHistory] = useState<string[]>([]);
   const [currentQuestIndex, setCurrentQuestIndex] = useState(0); 
   const [actionPoints, setActionPoints] = useState(3);
@@ -90,6 +92,7 @@ export default function App() {
   const [isStageTransitioning, setIsStageTransitioning] = useState(false);
   const [isShutterActive, setIsShutterActive] = useState(false);
   const [isGameOverTransitioning, setIsGameOverTransitioning] = useState(false);
+  const [gameOverText, setGameOverText] = useState("GAME OVER");
 
   const [unlockedEndings, setUnlockedEndings] = useState<EndingType[]>(() => {
     const saved = localStorage.getItem('cat_endings');
@@ -122,15 +125,15 @@ export default function App() {
   useEffect(() => {
     if (phase !== 'START' && phase !== 'PROLOGUE' && phase !== 'REBIRTH' && phase !== 'CHARACTER_SELECT' && phase !== 'GAME_OVER' && phase !== 'VICTORY' && character && !isGameOverTransitioning) {
         const saveData: SaveData = {
-            day, stats, stage, completedEventIds, completedAt, history, 
+            day, stats, stage, completedEventIds, completedAt, failedAt, history, 
             currentQuestIndex, actionPoints, dailyActionsTaken, logs, lastRandomEventId, character,
             seenNightThoughtIds,
             timestamp: Date.now(),
-            version: '1.0.4'
+            version: '1.0.5'
         };
         localStorage.setItem('cat_adventure_autosave', JSON.stringify(saveData));
     }
-  }, [day, stats, stage, completedEventIds, completedAt, history, currentQuestIndex, actionPoints, dailyActionsTaken, logs, lastRandomEventId, character, seenNightThoughtIds, phase, isGameOverTransitioning]);
+  }, [day, stats, stage, completedEventIds, completedAt, failedAt, history, currentQuestIndex, actionPoints, dailyActionsTaken, logs, lastRandomEventId, character, seenNightThoughtIds, phase, isGameOverTransitioning]);
 
   const addLog = (message: string, type: LogEntry['type'] = 'info') => {
     setLogs(prev => [{ day, message, type }, ...prev].slice(0, 30));
@@ -208,41 +211,56 @@ export default function App() {
       if (completedEventIds.includes('side_apprentice_celeb_good')) badges.push('ACH_APPRENTICE_MASTER');
       if (completedEventIds.includes('side_apprentice_celeb_evil')) badges.push('ACH_APPRENTICE_RIVAL');
       
-      if (completedEventIds.includes('side_hakimi_3') && history.includes('love_choice_open_window') && !history.includes('choice_egg_surrender')) badges.push('ACH_LOVE_TRUE');
+      // Love Chain
+      const hasBalls = !history.includes('choice_egg_surrender') && !failedAt['side_egg_crisis'];
+      if (completedEventIds.includes('side_hakimi_3') && history.includes('love_choice_open_window') && hasBalls) badges.push('ACH_LOVE_TRUE');
+      if (completedEventIds.includes('side_hakimi_3') && history.includes('love_choice_open_window') && hasBalls) badges.push('ACH_LOVE_FAMILY'); // 成功且有蛋蛋 -> 儿孙满堂
       if (completedEventIds.includes('side_hakimi_3') && history.includes('love_choice_watch')) badges.push('ACH_LOVE_REGRET');
       if (completedEventIds.includes('side_hakimi_3_neutered') && history.includes('love_choice_show_scar')) badges.push('ACH_LOVE_PLATONIC');
 
-      if (history.includes('choice_egg_resist')) badges.push('ACH_EGG_DEFENDER');
+      // Egg Crisis
+      // 孤睾战士：被绝育 (主动顺从 OR 抵抗失败)
+      if (history.includes('choice_egg_surrender') || failedAt['side_egg_crisis']) {
+          badges.push('ACH_EGG_DEFENDER');
+      }
 
       if (history.includes('phil_choice_revolution')) badges.push('ACH_PHILO_UTOPIA');
       if (history.includes('phil_choice_simulation')) badges.push('ACH_PHILO_NIHILISM');
       if (history.includes('phil_choice_divine_right') && history.includes('phil_choice_oligarch')) badges.push('ACH_PHILO_DICTATOR');
 
+      // Live Sales Endings
+      if (history.includes('run') && completedEventIds.includes('stage_sales')) badges.push('ACH_RETURN_WILD');
+      if (history.includes('run') && !completedEventIds.includes('stage_sales')) badges.push('ACH_CAGE_CAT');
+
       return badges;
   };
 
   const finishGame = (type: EndingType) => {
-    // 1. Trigger Transition Animation Immediately
+    // 1. Determine Win/Loss for Curtain
+    const isVictory = type.startsWith('LEGEND_') || type.startsWith('SURVIVOR_');
+    setGameOverText(isVictory ? "传奇达成" : "GAME OVER");
+
+    // 2. Trigger Transition Animation Immediately
     setIsGameOverTransitioning(true);
     
-    // 2. Remove Autosave IMMEDIATELY to prevent resuming dead game
+    // 3. Remove Autosave IMMEDIATELY to prevent resuming dead game
     localStorage.removeItem('cat_adventure_autosave');
     
-    // 3. Determine Primary Ending and Achievements
+    // 4. Determine Primary Ending and Achievements
     setPrimaryEnding(type);
     const allEarned = calculateAchievements(type);
     setEarnedAchievements(allEarned);
 
-    // 4. Unlock in Storage
+    // 5. Unlock in Storage
     setUnlockedEndings(prev => {
       const next = Array.from(new Set([...prev, ...allEarned]));
       localStorage.setItem('cat_endings', JSON.stringify(next));
       return next;
     });
 
-    // 5. Delay Phase Change to allow curtain animation to finish
+    // 6. Delay Phase Change to allow curtain animation to finish
     setTimeout(() => {
-        setPhase('GAME_OVER');
+        setPhase(isVictory ? 'VICTORY' : 'GAME_OVER'); // Use VICTORY phase if win, though they map to same component
         setIsGameOverTransitioning(false);
     }, 1500); 
   };
@@ -278,11 +296,11 @@ export default function App() {
 
   const saveToSlot = (slotId: number) => {
     const saveData: SaveData = {
-      day, stats, stage, completedEventIds, completedAt, history, 
+      day, stats, stage, completedEventIds, completedAt, failedAt, history, 
       currentQuestIndex, actionPoints, dailyActionsTaken, logs, lastRandomEventId, character,
       seenNightThoughtIds,
       timestamp: Date.now(),
-      version: '1.0.4'
+      version: '1.0.5'
     };
     localStorage.setItem(getSaveSlotKey(slotId), JSON.stringify(saveData));
     addLog(`游戏已保存至存档 ${slotId}`, 'success');
@@ -296,6 +314,7 @@ export default function App() {
       setStage(data.stage);
       setCompletedEventIds(data.completedEventIds);
       setCompletedAt(data.completedAt || {});
+      setFailedAt(data.failedAt || {});
       setHistory(data.history);
       setCurrentQuestIndex(data.currentQuestIndex);
       setActionPoints(data.actionPoints);
@@ -376,11 +395,11 @@ export default function App() {
       audioManager.playClick();
       if (character && !isGameOverTransitioning && !isStatsDead(stats)) {
           const saveData: SaveData = {
-              day, stats, stage, completedEventIds, completedAt, history, 
+              day, stats, stage, completedEventIds, completedAt, failedAt, history, 
               currentQuestIndex, actionPoints, dailyActionsTaken, logs, lastRandomEventId, character,
               seenNightThoughtIds,
               timestamp: Date.now(),
-              version: '1.0.4'
+              version: '1.0.5'
           };
           localStorage.setItem('cat_adventure_autosave', JSON.stringify(saveData));
       }
@@ -490,6 +509,9 @@ export default function App() {
         if (success) {
             setCompletedEventIds(prev => [...prev, currentEvent.id]);
             setCompletedAt(prev => ({ ...prev, [currentEvent.id]: day })); 
+        } else {
+            // New: Track Failure Time
+            setFailedAt(prev => ({ ...prev, [currentEvent.id]: day }));
         }
         setHistory(prev => [...prev, currentEvent.id, choice.id]);
     }
@@ -587,6 +609,7 @@ export default function App() {
       setStage('STRAY');
       setCompletedEventIds([]);
       setCompletedAt({});
+      setFailedAt({});
       setHistory([]);
       setCurrentQuestIndex(0);
       setPrimaryEnding(null);
@@ -614,14 +637,16 @@ export default function App() {
       ...DAILY_ACTIONS.filter(a => (!a.allowedStages || a.allowedStages.includes(stage)) && (!a.excludedStages || !a.excludedStages.includes(stage)))
   ];
 
-  const unlockedActionsRaw = allPotentialActions.filter(a => !a.unlockCondition || a.unlockCondition(day, stats, completedEventIds, history, completedAt).unlocked);
+  // Modified to pass failedAt
+  const unlockedActionsRaw = allPotentialActions.filter(a => !a.unlockCondition || a.unlockCondition(day, stats, completedEventIds, history, completedAt, failedAt).unlocked);
   const unlockedActions = [...unlockedActionsRaw].sort((a, b) => a.type === 'STAGE' ? -1 : 1);
 
   const lockedActions = allPotentialActions.filter(a => {
       if (!a.unlockCondition) return false;
-      const res = a.unlockCondition(day, stats, completedEventIds, history, completedAt);
+      const res = a.unlockCondition(day, stats, completedEventIds, history, completedAt, failedAt);
       if (res.unlocked) return false;
-      if (res.reason && (res.reason.includes('前置') || res.reason.includes('完成') || res.reason.includes('后置'))) return false;
+      // Filter out logic-hidden locks (like prerequisites) but keep stat/time/cooldown locks visible
+      if (res.reason && (res.reason.includes('前置') || res.reason.includes('完成'))) return false;
       return true;
   });
 
@@ -805,6 +830,7 @@ export default function App() {
             lockedActions={lockedActions}
             textScale={textScale}
             isGameOverTransitioning={isGameOverTransitioning}
+            gameOverText={gameOverText}
             
             onMenuOpen={() => setIsMenuOpen(true)}
             onChoice={handleChoice}

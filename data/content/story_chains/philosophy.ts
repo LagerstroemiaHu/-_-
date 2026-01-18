@@ -15,7 +15,13 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
         image: getImg('丛林法则', '78350f'),
         type: 'SIDE_QUEST',
         allowedStages: ['STRAY'],
-        unlockCondition: (day, stats) => ({ unlocked: day >= 2 && stats.smarts > 15, reason: '需第2天且智力>15' }),
+        unlockCondition: (day, stats, completed, history, completedAt, failedAt) => {
+            // 冷却检查
+            if (failedAt['phil_stray_jungle'] && day <= failedAt['phil_stray_jungle'] + 1) {
+                return { unlocked: false, reason: '上次失败需冷却' };
+            }
+            return { unlocked: day >= 3 && stats.smarts > 15, reason: '需第3天且智力>15' };
+        },
         choices: [
             {
                 id: 'phil_choice_dominate',
@@ -32,7 +38,7 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
                     }
                     return {
                         changes: { health: -10, satiety: -5 },
-                        message: '老猫为了活命爆发了惊人的力量。你被咬伤了。',
+                        message: '老猫为了活命爆发了惊人的力量。你被咬伤了。（过两天再试试）',
                         success: false,
                         effectType: 'damage'
                     };
@@ -53,7 +59,7 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
                     }
                     return {
                         changes: { satiety: -5, hissing: 5 },
-                        message: '你刚推过去，它就叼起整块肉跑了！该死的背叛。你上了一课。',
+                        message: '你刚推过去，它就叼起整块肉跑了！该死的背叛。（过两天再试试）',
                         success: false,
                         effectType: 'neutral'
                     };
@@ -66,7 +72,7 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
                 effect: (stats) => ({
                     changes: { satiety: -10, smarts: 2, health: -5 },
                     message: '在你思考的时候，肉被狗叼走了。思考太多是会饿死的。',
-                    success: false,
+                    success: false, // Intentional failure but no cooldown needed logic-wise, but for consistency:
                     effectType: 'neutral'
                 })
             }
@@ -74,7 +80,7 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
     },
 
     // ----------------------------------------------------------------
-    // 阶段二：领主 - 封建契约 (Day 6+) - 错开时间
+    // 阶段二：领主 - 封建契约 (Day 8+) - 错开时间
     // ----------------------------------------------------------------
     {
         id: 'phil_lord_contract',
@@ -84,16 +90,21 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
         image: getImg('猫的王座', '581c87'),
         type: 'SIDE_QUEST',
         allowedStages: ['CAT_LORD'],
-        unlockCondition: (day, stats, completed) => ({
-            unlocked: completed.includes('phil_stray_jungle') && day >= 6,
-            reason: '需第6天且完成前置'
-        }),
+        unlockCondition: (day, stats, completed, history, completedAt, failedAt) => {
+            if (failedAt['phil_lord_contract'] && day <= failedAt['phil_lord_contract'] + 1) {
+                return { unlocked: false, reason: '需恢复威信' };
+            }
+            return {
+                unlocked: completed.includes('phil_stray_jungle') && day >= 8,
+                reason: '需第8天且完成前置'
+            };
+        },
         choices: [
             {
                 id: 'phil_choice_divine_right',
                 text: '因为我最强 (君权神授)',
                 condition: (stats) => stats.hissing > 40, 
-                calculateChance: (stats) => Math.min(95, 20 + stats.hissing * 0.7),
+                calculateChance: (stats) => Math.min(95, 30 + stats.hissing * 0.8),
                 effect: (stats) => ({
                     changes: { hissing: 10, smarts: 5 }, // Stage 2: moderate hiss gain
                     message: '你一巴掌把它拍翻：“因为是我赶走了野狗。我的武力就是你们安睡的保障。”',
@@ -104,7 +115,7 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
             {
                 id: 'phil_choice_social_contract',
                 text: '这是一种交易 (社会契约)',
-                calculateChance: (stats) => Math.min(90, 30 + stats.smarts * 0.6),
+                calculateChance: (stats) => Math.min(90, 30 + stats.smarts * 0.8),
                 effect: (stats) => ({
                     changes: { smarts: 15, hissing: -5 },
                     message: '“你可以不交，但下次恶犬来袭时，别躲在我的身后。” 它沉默了。',
@@ -122,7 +133,7 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
                     if (roll(chance)) {
                         return { changes: { smarts: 10, hissing: -5 }, message: '你用逻辑说服了它。它听得晕头转向，最后交了双倍鱼头当学费。', success: true, effectType: 'neutral' };
                     }
-                    return { changes: { hissing: -10, health: -5 }, message: '它不想听你的长篇大论，直接给了你一拳。暴力比哲学更管用。', success: false, effectType: 'damage' };
+                    return { changes: { hissing: -10, health: -5 }, message: '它不想听你的长篇大论，直接给了你一拳。暴力比哲学更管用。（过两天再试试）', success: false, effectType: 'damage' };
                 }
             }
         ]
@@ -139,10 +150,15 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
         image: getImg('劳动异化', '1d4ed8'),
         type: 'SIDE_QUEST',
         allowedStages: ['MANSION'],
-        unlockCondition: (day, stats, completed) => ({
-            unlocked: completed.includes('phil_lord_contract') && day >= 10,
-            reason: '需第10天且完成前置'
-        }),
+        unlockCondition: (day, stats, completed, history, completedAt, failedAt) => {
+            if (failedAt['phil_mansion_labor'] && day <= failedAt['phil_mansion_labor'] + 1) {
+                return { unlocked: false, reason: '需平复心情' };
+            }
+            return {
+                unlocked: completed.includes('phil_lord_contract') && day >= 10,
+                reason: '需第10天且完成前置'
+            };
+        },
         choices: [
             {
                 id: 'phil_choice_work',
@@ -159,7 +175,7 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
                     }
                     return {
                         changes: { hissing: 2, satiety: -5 },
-                        message: '你跳得很敷衍，甚至绊了一跤。铲屎官笑了，但没给罐头。',
+                        message: '你跳得很敷衍，甚至绊了一跤。铲屎官笑了，但没给罐头。（过两天再试试）',
                         success: false,
                         effectType: 'neutral'
                     };
@@ -181,8 +197,8 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
                     }
                     return {
                         changes: { satiety: -10, hissing: 5 },
-                        message: '推不动。铲屎官以为你在闹脾气，把你关了禁闭。',
-                        success: false,
+                        message: '推不动。铲屎官以为你在闹脾气，把你关了禁闭。（过两天再试试）',
+                        success: false, // Changed to false to allow retry
                         effectType: 'neutral'
                     };
                 }
@@ -212,10 +228,15 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
         image: getImg('喵特纳雄耐尔', 'be123c'),
         type: 'SIDE_QUEST',
         allowedStages: ['MANSION', 'CELEBRITY'],
-        unlockCondition: (day, stats, completed) => ({
-            unlocked: completed.includes('phil_mansion_labor') && day >= 14,
-            reason: '需第14天且完成前置'
-        }),
+        unlockCondition: (day, stats, completed, history, completedAt, failedAt) => {
+            if (failedAt['phil_final_utopia'] && day <= failedAt['phil_final_utopia'] + 1) {
+                return { unlocked: false, reason: '革命需积蓄力量' };
+            }
+            return {
+                unlocked: completed.includes('phil_mansion_labor') && day >= 14,
+                reason: '需第14天且完成前置'
+            };
+        },
         choices: [
             {
                 id: 'phil_choice_oligarch',
@@ -253,7 +274,7 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
                     }
                     return {
                         changes: { hissing: 5, smarts: 5 },
-                        message: '粮袋卡住了。你对着楼下叫了几声，只传来了风声。革命失败。',
+                        message: '粮袋卡住了。你对着楼下叫了几声，只传来了风声。革命失败。（过两天再试试）',
                         success: false,
                         effectType: 'neutral'
                     };
@@ -274,7 +295,7 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
                     }
                     return {
                         changes: { smarts: -10 },
-                        message: '你盯着空气看了太久，觉得自己像个傻子。',
+                        message: '你盯着空气看了太久，觉得自己像个傻子。（过两天再试试）',
                         success: false,
                         effectType: 'neutral'
                     }

@@ -55,7 +55,14 @@ export interface GameEvent {
   hints?: { stat: string; change: 'up' | 'down' }[];
   allowedStages?: GameStage[];
   excludedStages?: GameStage[];
-  unlockCondition?: (day: number, stats: GameStats, completed: string[], history: string[], completedAt: Record<string, number>) => { unlocked: boolean; reason?: string };
+  unlockCondition?: (
+      day: number, 
+      stats: GameStats, 
+      completed: string[], 
+      history: string[], 
+      completedAt: Record<string, number>,
+      failedAt: Record<string, number> // New parameter
+  ) => { unlocked: boolean; reason?: string };
   autoTriggerCondition?: (day: number, stats: GameStats, stage: GameStage) => boolean;
 }
 
@@ -95,11 +102,14 @@ export type EndingType =
 
   // --- STORY CHAINS (7) ---
   | 'ACH_APPRENTICE_MASTER' | 'ACH_APPRENTICE_RIVAL' | 'ACH_APPRENTICE_TRAITOR'
-  | 'ACH_LOVE_TRUE' | 'ACH_LOVE_REGRET' | 'ACH_LOVE_PLATONIC'
+  | 'ACH_LOVE_TRUE' | 'ACH_LOVE_REGRET' | 'ACH_LOVE_PLATONIC' | 'ACH_LOVE_FAMILY'
   | 'ACH_EGG_DEFENDER' 
 
   // --- PHILOSOPHY (3) ---
   | 'ACH_PHILO_UTOPIA' | 'ACH_PHILO_NIHILISM' | 'ACH_PHILO_DICTATOR'
+
+  // --- SPECIAL STAGE SALES ENDINGS (2) ---
+  | 'ACH_RETURN_WILD' | 'ACH_CAGE_CAT'
 
   // --- TRAITS / STATS (6) ---
   | 'TRAIT_SAINT' | 'TRAIT_DEVIL' | 'TRAIT_COWARD'

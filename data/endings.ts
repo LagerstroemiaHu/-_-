@@ -1,6 +1,6 @@
 
 import { EndingType, EndingConfig } from '../types';
-import { Skull, Crown, Star, Home, Heart, Zap, Ghost, Trash2, Camera, Brain, Shield, Users, HeartCrack, Baby, Smile, Frown, Swords, Flag, Eye } from 'lucide-react';
+import { Skull, Crown, Star, Home, Heart, Zap, Ghost, Trash2, Camera, Brain, Shield, Users, HeartCrack, Baby, Smile, Frown, Swords, Flag, Eye, Lock, Bird, EggOff, Cat } from 'lucide-react';
 import { getImg } from './utils';
 
 export const ENDING_REGISTRY: Record<EndingType, EndingConfig> = {
@@ -105,6 +105,10 @@ export const ENDING_REGISTRY: Record<EndingType, EndingConfig> = {
         id: 'ACH_LOVE_TRUE', title: '神仙眷侣', description: '成就：打破了阶级的阻碍，与哈基米终成眷属。',
         icon: Heart, color: 'text-pink-500', isGood: true, image: getImg('两只猫依偎在窗台', 'ec4899')
     },
+    'ACH_LOVE_FAMILY': {
+        id: 'ACH_LOVE_FAMILY', title: '儿孙满堂', description: '成就：不仅赢得了爱情，还保住了蛋蛋，留下了优秀的基因。',
+        icon: Cat, color: 'text-rose-400', isGood: true, image: getImg('一窝可爱的小猫', 'fb7185')
+    },
     'ACH_LOVE_REGRET': {
         id: 'ACH_LOVE_REGRET', title: '爱过', description: '成就：在暴雨夜选择了放手，留下了无尽的遗憾。',
         icon: HeartCrack, color: 'text-stone-400', isGood: true, image: getImg('雨夜中离去的背影', 'a8a29e')
@@ -114,8 +118,8 @@ export const ENDING_REGISTRY: Record<EndingType, EndingConfig> = {
         icon: Heart, color: 'text-blue-400', isGood: true, image: getImg('两只猫隔着玻璃对视', '60a5fa')
     },
     'ACH_EGG_DEFENDER': {
-        id: 'ACH_EGG_DEFENDER', title: '孤睾战士', description: '成就：面对手术刀，你誓死捍卫了身体的完整性！',
-        icon: Shield, color: 'text-orange-500', isGood: true, image: getImg('逃离医院的猫', 'f97316')
+        id: 'ACH_EGG_DEFENDER', title: '孤睾战士', description: '成就：无论是因为顺从还是反抗失败，你永远失去了它们。你变得更强了，也更秃了。',
+        icon: EggOff, color: 'text-stone-500', isGood: false, image: getImg('带着伊丽莎白圈的猫', '78716c')
     },
     'ACH_PHILO_UTOPIA': {
         id: 'ACH_PHILO_UTOPIA', title: '革命家', description: '成就：你试图建立一个没有饥饿的大同世界。',
@@ -128,6 +132,14 @@ export const ENDING_REGISTRY: Record<EndingType, EndingConfig> = {
     'ACH_PHILO_DICTATOR': {
         id: 'ACH_PHILO_DICTATOR', title: '独裁者', description: '成就：你悟出了强权即真理，并贯彻到底。',
         icon: Crown, color: 'text-black', isGood: true, image: getImg('独坐王座的黑影', '000000')
+    },
+    'ACH_RETURN_WILD': {
+        id: 'ACH_RETURN_WILD', title: '自由之翼', description: '成就：在流量巅峰选择撕碎马甲，回归街头。你虽然失去了一切，但赢回了自己。',
+        icon: Bird, color: 'text-cyan-500', isGood: true, image: getImg('跳出窗户飞向蓝天的猫', '06b6d4')
+    },
+    'ACH_CAGE_CAT': {
+        id: 'ACH_CAGE_CAT', title: '笼中困兽', description: '成就：试图逃离直播生涯失败，被关进了镀金的笼子。',
+        icon: Lock, color: 'text-stone-700', isGood: false, image: getImg('金丝笼里眼神黯淡的猫', '292524')
     },
     
     // === TRAITS ===
