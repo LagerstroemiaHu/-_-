@@ -9,7 +9,8 @@ export const SUDDEN_EVENTS: GameEvent[] = [
         description: '主人让你选择：', 
         image: getImg('艰难抉择', '111827'),
         type: 'AUTO',
-        autoTriggerCondition: (day, stats, stage) => (stage === 'MANSION' || stage === 'CELEBRITY') && roll(30),
+        // Reduced from 70% to 20%
+        autoTriggerCondition: (day, stats, stage) => (stage === 'MANSION' || stage === 'CELEBRITY') && roll(20),
         choices: [
             {
                 id: 'carrot',
@@ -39,7 +40,8 @@ export const SUDDEN_EVENTS: GameEvent[] = [
         description: '警告：你吃得太多太好了。你的肚子涨得像个气球，连路都走不动。过度的安逸是流浪猫的大忌。',
         image: getImg('暴饮暴食', 'f59e0b'),
         type: 'AUTO',
-        autoTriggerCondition: (day, stats, stage) => stats.satiety > 90 && stats.health > 80 && roll(60),
+        // Reduced from 60% to 25%
+        autoTriggerCondition: (day, stats, stage) => stats.satiety > 90 && stats.health > 80 && roll(25),
         choices: [
             {
                 id: 'vomit_pain',
@@ -91,8 +93,8 @@ export const SUDDEN_EVENTS: GameEvent[] = [
         description: '你最近太嚣张了。你以为自己是狮子王，结果在一只真•恶犬面前翻了车。',
         image: getImg('盲目自信', 'b91c1c'),
         type: 'AUTO',
-        // 恢复：移除对马保锅历史记录的检查
-        autoTriggerCondition: (day, stats, stage) => stage === 'STRAY' && stats.hissing > 80 && roll(50),
+        // Reduced from 60% to 20%
+        autoTriggerCondition: (day, stats, stage) => stage === 'STRAY' && stats.hissing > 80 && roll(20),
         choices: [
             {
                 id: 'get_beaten',
@@ -133,7 +135,8 @@ export const SUDDEN_EVENTS: GameEvent[] = [
         description: '你太聪明了。你开始思考“猫生的意义”。为什么我们要抓老鼠？为什么天是蓝的？这种思考让你感到虚无。',
         image: getImg('猫生哲学', '1e3a8a'),
         type: 'AUTO',
-        autoTriggerCondition: (day, stats, stage) => stats.smarts > 70 && stage !== 'CELEBRITY' && roll(40),
+        // Reduced from 40% to 15%
+        autoTriggerCondition: (day, stats, stage) => stats.smarts > 70 && stage !== 'CELEBRITY' && roll(15),
         choices: [
             {
                 id: 'depressed',
@@ -185,7 +188,8 @@ export const SUDDEN_EVENTS: GameEvent[] = [
         description: '阴雨天。你年轻时留下的伤腿开始隐隐作痛。岁月不饶猫啊。',
         image: getImg('旧伤复发', '57534e'),
         type: 'AUTO',
-        autoTriggerCondition: (day, stats, stage) => day > 10 && roll(20),
+        // Reduced from 20% to 10%
+        autoTriggerCondition: (day, stats, stage) => day > 10 && roll(10),
         choices: [
             {
                 id: 'ouch',
@@ -226,7 +230,8 @@ export const SUDDEN_EVENTS: GameEvent[] = [
         description: '你快饿死了。就在你眼冒金星的时候，天上掉下了一个肉包子（或者是谁没拿稳）。',
         image: getImg('天降肉包', 'fbbf24'),
         type: 'AUTO',
-        autoTriggerCondition: (day, stats, stage) => stats.satiety < 10 && roll(80),
+        // Reduced from 70% to 30% (keep it slightly higher as it's a helper event)
+        autoTriggerCondition: (day, stats, stage) => stats.satiety < 10 && roll(30),
         choices: [
             {
                 id: 'eat_save',

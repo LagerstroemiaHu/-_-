@@ -11,7 +11,7 @@ interface Props {
 
 export const TitleScreen: React.FC<Props> = ({ onStart, onContinue, onGallery }) => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center stage-stray p-4 text-center animate-in select-none overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center home-bg-animated p-4 text-center animate-in select-none overflow-hidden">
       <div className="bg-white p-8 border-[6px] border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] max-w-lg w-full mb-8 relative z-10">
         <h1 className="text-4xl md:text-7xl font-black mb-2 uppercase tracking-tighter">猫猫流浪模拟器</h1>
         <p className="text-sm md:text-xl font-bold mb-8 text-stone-500 italic">十五日流浪传说</p>
@@ -35,9 +35,9 @@ export const TitleScreen: React.FC<Props> = ({ onStart, onContinue, onGallery })
       <button 
         onClick={() => { audioManager.playClick(); onGallery(); }} 
         onMouseEnter={() => audioManager.playHover()}
-        className="relative z-10 font-black text-white hover:text-amber-300 flex items-center gap-2 underline uppercase tracking-widest drop-shadow-md hover:scale-110 transition-transform"
+        className="relative z-10 px-4 py-2 bg-white/80 backdrop-blur-sm border-4 border-black font-black text-stone-900 hover:bg-amber-400 hover:text-black flex items-center gap-2 uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-1 active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
       >
-        <Trophy size={20}/> 结局图鉴
+        <Trophy size={18}/> 结局图鉴
       </button>
     </div>
   );

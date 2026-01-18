@@ -40,7 +40,8 @@ export const Rebirth: React.FC<Props> = ({ character, onSign, onBack }) => {
 
                 <div className="flex gap-3 mb-4 bg-white p-3 border-4 border-black transform rotate-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
                     <div className="w-16 h-16 md:w-20 md:h-20 border-4 border-black shrink-0 bg-stone-100">
-                        <img src={character.avatar} className="w-full h-full object-cover grayscale" alt={character.name} />
+                        {/* Remove grayscale here to show original idle image */}
+                        <img src={character.avatar} className="w-full h-full object-cover" alt={character.name} />
                     </div>
                     <div>
                         <h3 className="text-lg md:text-xl font-black uppercase">{character.name}</h3>

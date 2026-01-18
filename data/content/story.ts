@@ -87,10 +87,19 @@ export const STORY_QUESTS: GameEvent[] = [
              if (failedAt['stage_mansion'] && day <= failedAt['stage_mansion'] + 2) {
                 return { unlocked: false, reason: '需等待时机(冷却中)' };
              }
-             const unlocked = day >= 8 && stats.hissing < 40;
+             
+             // 逻辑：必须已经完成过上一阶段进阶，且距离上一阶段至少过了2天
+             // 比如第4天进阶猫王，最早第6天才能进阶豪宅
+             const catLordDay = completedAt['stage_cat_lord'] || 0;
+             const bufferPassed = day >= catLordDay + 2;
+
+             const unlocked = day >= 8 && stats.hissing < 40 && bufferPassed;
              let reason = '';
+             
              if (day < 8) reason = '需第8天且哈气<40'; 
+             else if (!bufferPassed) reason = '需在猫王阶段沉淀2天';
              else if (stats.hissing >= 40) reason = '需哈气<40 (太野无法入户)';
+             
              return { unlocked, reason };
         },
         choices: [
@@ -156,11 +165,18 @@ export const STORY_QUESTS: GameEvent[] = [
             if (failedAt['stage_influencer'] && day <= failedAt['stage_influencer'] + 2) {
                 return { unlocked: false, reason: '需等待热度重燃(冷却中)' };
             }
-            const unlocked = day >= 12 && stats.smarts > 50 && stats.health > 30;
+            
+            // 逻辑：距离进入豪宅至少过了2天
+            const mansionDay = completedAt['stage_mansion'] || 0;
+            const bufferPassed = day >= mansionDay + 2;
+
+            const unlocked = day >= 12 && stats.smarts > 50 && stats.health > 30 && bufferPassed;
             let reason = '';
             if (day < 12) reason = '需第12天';
+            else if (!bufferPassed) reason = '需享受豪宅生活至少2天';
             else if (stats.smarts <= 50) reason = '需智力>50';
             else if (stats.health <= 30) reason = '需健康>30';
+            
             return { unlocked, reason };
         },
         choices: [

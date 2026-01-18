@@ -1,6 +1,6 @@
 
 import { EndingType, EndingConfig } from '../types';
-import { Skull, Crown, Star, Home, Heart, Zap, Ghost, Trash2, Camera, Brain, Shield, Users, HeartCrack, Baby, Smile, Frown, Swords, Flag, Eye, Lock, Bird, EggOff, Cat, Footprints } from 'lucide-react';
+import { Skull, Crown, Star, Home, Heart, Zap, Ghost, Trash2, Camera, Brain, Shield, Users, HeartCrack, Baby, Smile, Frown, Swords, Flag, Eye, Lock, Bird, EggOff, Cat, Footprints, Scissors, Scale, Shuffle, Ban } from 'lucide-react';
 import { getImg } from './utils';
 
 export const ENDING_REGISTRY: Record<EndingType, EndingConfig> = {
@@ -109,6 +109,10 @@ export const ENDING_REGISTRY: Record<EndingType, EndingConfig> = {
         id: 'ACH_LOVE_FAMILY', title: '儿孙满堂', description: '成就：不仅赢得了爱情，还保住了蛋蛋，留下了优秀的基因。',
         icon: Cat, color: 'text-rose-400', isGood: true, image: getImg('一窝可爱的小猫', 'fb7185')
     },
+    'ACH_DIVORCE': {
+        id: 'ACH_DIVORCE', title: '一别两宽', description: '成就：虽然娶到了白富美，但为了流量炒作绯闻伤透了她的心。她带着孩子离开了，只留给你一个空荡荡的豪宅。',
+        icon: Scissors, color: 'text-stone-600', isGood: false, image: getImg('撕裂的结婚照', '57534e')
+    },
     'ACH_LOVE_REGRET': {
         id: 'ACH_LOVE_REGRET', title: '爱过', description: '成就：在暴雨夜选择了放手，留下了无尽的遗憾。',
         icon: HeartCrack, color: 'text-stone-400', isGood: true, image: getImg('雨夜中离去的背影', 'a8a29e')
@@ -121,6 +125,8 @@ export const ENDING_REGISTRY: Record<EndingType, EndingConfig> = {
         id: 'ACH_EGG_DEFENDER', title: '孤睾战士', description: '成就：无论是因为顺从还是反抗失败，你永远失去了它们。你变得更强了，也更秃了。',
         icon: EggOff, color: 'text-stone-500', isGood: false, image: getImg('带着伊丽莎白圈的猫', '78716c')
     },
+    
+    // === PHILOSOPHY ACHIEVEMENTS ===
     'ACH_PHILO_UTOPIA': {
         id: 'ACH_PHILO_UTOPIA', title: '革命家', description: '成就：你试图建立一个没有饥饿的大同世界。',
         icon: Flag, color: 'text-red-500', isGood: true, image: getImg('猫群聚集在红旗帜下', 'ef4444')
@@ -133,6 +139,19 @@ export const ENDING_REGISTRY: Record<EndingType, EndingConfig> = {
         id: 'ACH_PHILO_DICTATOR', title: '独裁者', description: '成就：你悟出了强权即真理，并贯彻到底。',
         icon: Crown, color: 'text-black', isGood: true, image: getImg('独坐王座的黑影', '000000')
     },
+    'ACH_PHILO_THREE_FACED': {
+        id: 'ACH_PHILO_THREE_FACED', title: '墙头草', description: '成就：你在强权、互助和虚无之间反复横跳，试图讨好所有主义。',
+        icon: Shuffle, color: 'text-amber-600', isGood: false, image: getImg('三张面具的猫', 'd97706')
+    },
+    'ACH_PHILO_TWO_FACED': {
+        id: 'ACH_PHILO_TWO_FACED', title: '双面猫', description: '成就：你的立场摇摆不定，在两种思想中纠结。',
+        icon: Scale, color: 'text-blue-400', isGood: true, image: getImg('半黑半白的脸', '3b82f6')
+    },
+    'ACH_PHILO_APOLITICAL': {
+        id: 'ACH_PHILO_APOLITICAL', title: '岁月静好', description: '成就：你对哲学不感兴趣，或者完全避开了所有思考的机会。',
+        icon: Ban, color: 'text-stone-400', isGood: true, image: getImg('睡觉的猫耳朵塞住', 'a8a29e')
+    },
+
     'ACH_RETURN_WILD': {
         id: 'ACH_RETURN_WILD', title: '自由之翼', description: '成就：在流量巅峰选择撕碎马甲，回归街头。你虽然失去了一切，但赢回了自己。',
         icon: Bird, color: 'text-cyan-500', isGood: true, image: getImg('跳出窗户飞向蓝天的猫', '06b6d4')

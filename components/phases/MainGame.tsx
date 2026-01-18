@@ -9,7 +9,7 @@ import {
   Moon, ScrollText, Flag, Compass, Check,
   Sword, Coffee, Fish, Smartphone, Heart, Sparkles,
   Menu, Zap, Eye, AlertCircle, ArrowRight, Cat,
-  MessageSquareQuote, Volume2, VolumeX, Battery, BatteryWarning, Share2
+  MessageSquareQuote, Volume2, VolumeX, Battery, BatteryWarning, Share2, Skull, Trophy, Ghost, CloudRain
 } from 'lucide-react';
 import { TextScale } from '../../App';
 
@@ -183,6 +183,7 @@ interface Props {
     onResolutionComplete: () => void;
     onStartDay: (day: number) => void;
     onFinishGame: () => void;
+    onProceedToEnding: () => void; // New handler for clicking curtain
     onSetEvent: (event: GameEvent | null) => void;
     onSetEventResult: (res: any) => void;
     
@@ -197,7 +198,7 @@ export const MainGame: React.FC<Props> = ({
     dailyActionsTaken, currentEvent, eventResult, activeEffect,
     isShaking, isImpactShaking, isFlashActive, isStageTransitioning, isShutterActive, isGameOverTransitioning,
     currentNightThought, unlockedActions, lockedActions, textScale, gameOverText,
-    onMenuOpen, onChoice, onResolutionComplete, onStartDay, onFinishGame,
+    onMenuOpen, onChoice, onResolutionComplete, onStartDay, onFinishGame, onProceedToEnding,
     onSetEvent, onSetEventResult, onUpdateStats, onSetDay, onSetPhase
 }) => {
     
@@ -292,7 +293,7 @@ export const MainGame: React.FC<Props> = ({
 
     const handleShare = () => {
         audioManager.playSfx('shutter');
-        alert("📸 咔嚓！精彩瞬间已保存（模拟）");
+        alert("📸 请自行截屏分享哦 (我才不会要你的相册权限呢)");
     };
 
     const currentTheme = getEventTheme(currentEvent);
@@ -309,6 +310,13 @@ export const MainGame: React.FC<Props> = ({
     const lockedTitleClass = getTextClasses(textScale, 'locked_title');
     const lockedReasonClass = getTextClasses(textScale, 'locked_reason');
 
+    const isVictoryCurtain = gameOverText.includes('传奇') || gameOverText.includes('达成');
+
+    // Dynamic curtain styling for "Cute" vibe
+    const curtainClass = isVictoryCurtain
+        ? "bg-amber-400 border-b-[8px] border-amber-600" // Happy Yellow/Orange
+        : "bg-stone-300 border-b-[8px] border-stone-500"; // Sad Rainy Grey (Concrete/Street vibe)
+
     return (
         <div className={`fixed inset-0 flex flex-col ${STAGE_BG_MAP[displayStage]} font-sans overflow-hidden border-[4px] md:border-[6px] border-black select-none transition-all duration-1000 ${isShaking ? 'animate-shake' : ''} ${isImpactShaking ? 'animate-impact' : ''}`}>
             <div className={`impact-flash ${isFlashActive ? 'flash-active' : ''}`} />
@@ -317,9 +325,38 @@ export const MainGame: React.FC<Props> = ({
 
             <EffectsLayer isLowHealth={stats.health < 30} isLowSatiety={stats.satiety < 20} isLowWildness={stats.hissing < 15} activeEffect={activeEffect} />
 
-            {/* Game Over Curtain */}
-            <div className={`curtain-top ${isGameOverTransitioning ? 'active' : ''}`}>
-                <div>{gameOverText}</div>
+            {/* Game Over Curtain - Enhanced UI (Cute/Non-Scary Version) */}
+            <div 
+                className={`curtain-top ${isGameOverTransitioning ? 'active cursor-pointer pointer-events-auto' : 'pointer-events-none'} ${curtainClass}`}
+                onClick={() => { if(isGameOverTransitioning) onProceedToEnding(); }}
+            >
+                <div className={`
+                    flex flex-col items-center justify-center p-8 border-[6px] 
+                    ${isVictoryCurtain ? 'bg-white border-black text-black' : 'bg-white border-stone-500 text-stone-500'}
+                    shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)]
+                    transform -rotate-1 rounded-sm max-w-lg w-[90%]
+                `}>
+                    {isVictoryCurtain ? (
+                        <>
+                            <Trophy size={80} className="mb-4 text-amber-500 drop-shadow-sm animate-bounce" strokeWidth={2.5} />
+                            <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-2 text-black">{gameOverText}</h1>
+                            <p className="text-lg md:text-xl font-bold italic tracking-widest text-amber-600 bg-amber-100 px-4 py-1 transform rotate-1">流芳百世</p>
+                        </>
+                    ) : (
+                        <>
+                            {/* Replaced Skull with CloudRain/Ghost for "Cute Sadness" */}
+                            <Ghost size={80} className="mb-4 text-stone-400 drop-shadow-sm animate-pulse" strokeWidth={2.5} />
+                            <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-2 text-stone-600">{gameOverText}</h1>
+                            <p className="text-lg md:text-xl font-bold italic tracking-widest text-stone-400 bg-stone-100 px-4 py-1 transform rotate-1">喵生重来</p>
+                        </>
+                    )}
+                </div>
+                {/* Click to continue hint */}
+                {isGameOverTransitioning && (
+                    <div className="absolute bottom-16 md:bottom-24 text-black/50 dark:text-white/50 font-black text-sm uppercase tracking-widest animate-pulse transition-opacity duration-1000 delay-[1500ms]" style={{ opacity: isGameOverTransitioning ? 1 : 0 }}>
+                        [ 点击屏幕继续 ]
+                    </div>
+                )}
             </div>
 
             <header className={`h-14 md:h-16 shrink-0 bg-white border-b-[4px] md:border-b-[6px] border-black flex items-stretch z-30 shadow-md ${isImpactShaking ? 'animate-impact' : ''}`}>

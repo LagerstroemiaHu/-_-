@@ -64,11 +64,20 @@ class AudioManager {
   }
 
   public playBgm(key: BgmKey) {
-    if (this.currentBgmKey === key && this.bgmAudio && !this.bgmAudio.paused) {
-        return; // Already playing this track
+    // Check if we are already playing this track
+    // We check bgmAudio existence. 'paused' check is tricky during loading, 
+    // but if we have the object and key matches, we assume it's handling it.
+    if (this.currentBgmKey === key && this.bgmAudio) {
+        // If it's playing or about to play, do nothing.
+        // If it was paused manually elsewhere, this might prevent restart, 
+        // but in this app we only control via this manager.
+        if (!this.bgmAudio.paused || this.bgmAudio.currentTime === 0) { 
+             // currentTime === 0 implies it might be just created/loading
+             return; 
+        }
     }
 
-    // 1. Clear any pending fade operations immediately
+    // 1. Clear any pending fade-in operations immediately
     if (this.fadeInterval) {
         clearInterval(this.fadeInterval);
         this.fadeInterval = null;
@@ -90,15 +99,26 @@ class AudioManager {
     newBgm.muted = this._isMuted; 
     newBgm.volume = 0; // Start at 0 for fade
     
+    // CRITICAL: Assign state SYNCHRONOUSLY before the async play() promise
+    // This prevents race conditions where multiple calls (e.g. React StrictMode) create multiple tracks
+    this.bgmAudio = newBgm;
+    this.currentBgmKey = key;
+    
     const playPromise = newBgm.play();
     
     if (playPromise !== undefined) {
         playPromise.then(() => {
-            this.bgmAudio = newBgm;
-            this.currentBgmKey = key;
-            this.fadeIn(newBgm);
+            // Only proceed if this audio instance is still the active one
+            if (this.bgmAudio === newBgm) {
+                this.fadeIn(newBgm);
+            } else {
+                // It was superseded while loading
+                newBgm.pause();
+                newBgm.currentTime = 0;
+            }
         }).catch(error => {
             console.warn("Auto-play prevented or audio failed:", error);
+            // If failed (e.g. no interaction), we keep the state so it might try again or we know what *should* be playing
         });
     }
   }
@@ -112,6 +132,7 @@ class AudioManager {
     if (this.bgmAudio) {
         this.fadeOut(this.bgmAudio);
         this.currentBgmKey = null;
+        // Don't nullify bgmAudio here, fadeOut will do it when finished
     }
   }
 
@@ -157,9 +178,15 @@ class AudioManager {
     this._isMuted = !this._isMuted;
     localStorage.setItem('cat_audio_muted', String(this._isMuted));
     
+    // Update active BGM
     if (this.bgmAudio) {
       this.bgmAudio.muted = this._isMuted;
     }
+    
+    // Note: We don't update pooled SFX mute state here because we check this._isMuted before playing SFX
+    // But if we wanted to be thorough for currently playing SFX:
+    // this.sfxPool.forEach(pool => pool.forEach(a => a.muted = this._isMuted));
+    
     return this._isMuted;
   }
 
@@ -172,8 +199,12 @@ class AudioManager {
 
     let vol = 0;
     this.fadeInterval = setInterval(() => {
+      // Safety check: if audio stopped playing or manager switched tracks
       if (!audio || audio.paused || audio !== this.bgmAudio) {
-          if (this.fadeInterval) clearInterval(this.fadeInterval);
+          if (this.fadeInterval) {
+              clearInterval(this.fadeInterval);
+              this.fadeInterval = null;
+          }
           return;
       }
 
@@ -181,19 +212,28 @@ class AudioManager {
         vol = Math.min(vol + 0.05, this._bgmVolume);
         audio.volume = vol;
       } else {
-        if (this.fadeInterval) clearInterval(this.fadeInterval);
-        this.fadeInterval = null;
+        if (this.fadeInterval) {
+            clearInterval(this.fadeInterval);
+            this.fadeInterval = null;
+        }
       }
     }, 100); 
   }
 
   private fadeOut(audio: HTMLAudioElement) {
+    // Note: We use a local interval here so multiple fadeouts (from rapid switching) don't conflict 
+    // with the single 'fadeInterval' property which is for the CURRENT track's fade in.
     let vol = audio.volume;
     const interval = setInterval(() => {
       if (vol > 0) {
         vol = Math.max(0, vol - 0.1);
         try {
-            audio.volume = vol;
+            // Check if audio is still valid object (it is, but protect against errors)
+            if (!audio.paused) {
+                audio.volume = vol;
+            } else {
+                clearInterval(interval);
+            }
         } catch (e) {
             clearInterval(interval);
         }

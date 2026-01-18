@@ -16,7 +16,6 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
         type: 'SIDE_QUEST',
         allowedStages: ['STRAY'],
         unlockCondition: (day, stats, completed, history, completedAt, failedAt) => {
-            // 冷却检查
             if (failedAt['phil_stray_jungle'] && day <= failedAt['phil_stray_jungle'] + 1) {
                 return { unlocked: false, reason: '上次失败需冷却' };
             }
@@ -30,7 +29,7 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
                 effect: (stats) => {
                     if (roll(30 + stats.health * 0.5 + stats.hissing * 0.2)) {
                         return {
-                            changes: { satiety: 40, hissing: 5, smarts: 5 }, // Stage 1: small hiss gain
+                            changes: { satiety: 40, hissing: 5, smarts: 5 },
                             message: '你打跑了它。肉很香，但有点苦。你悟出了第一条真理：垃圾桶不相信眼泪。',
                             success: true,
                             effectType: 'damage'
@@ -47,7 +46,7 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
             {
                 id: 'phil_choice_share',
                 text: '弱者的互助 (分食)',
-                calculateChance: (stats) => 90, // 修改：从100%降为90%
+                calculateChance: (stats) => 90,
                 effect: (stats) => {
                     if (roll(90)) {
                         return {
@@ -71,8 +70,9 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
                 calculateChance: (stats) => 100,
                 effect: (stats) => ({
                     changes: { satiety: -10, smarts: 2, health: -5 },
-                    message: '在你思考的时候，肉被狗叼走了。思考太多是会饿死的。',
-                    success: false, // Intentional failure but no cooldown needed logic-wise, but for consistency:
+                    // 注意：这里改为 success: true，这样才能计入 completedEventIds，从而允许任务链继续
+                    message: '在你思考的时候，肉被狗叼走了。但你并没有感到愤怒，只觉得这一切毫无意义。(虚无主义+1)',
+                    success: true, 
                     effectType: 'neutral'
                 })
             }
@@ -80,7 +80,7 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
     },
 
     // ----------------------------------------------------------------
-    // 阶段二：领主 - 封建契约 (Day 8+) - 错开时间
+    // 阶段二：领主 - 封建契约 (Day 8+)
     // ----------------------------------------------------------------
     {
         id: 'phil_lord_contract',
@@ -106,7 +106,7 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
                 condition: (stats) => stats.hissing > 40, 
                 calculateChance: (stats) => Math.min(95, 30 + stats.hissing * 0.8),
                 effect: (stats) => ({
-                    changes: { hissing: 10, smarts: 5 }, // Stage 2: moderate hiss gain
+                    changes: { hissing: 10, smarts: 5 },
                     message: '你一巴掌把它拍翻：“因为是我赶走了野狗。我的武力就是你们安睡的保障。”',
                     success: true,
                     effectType: 'damage'
@@ -126,7 +126,6 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
             {
                 id: 'phil_choice_debate',
                 text: '和它辩论',
-                // 修复逻辑：确保 calculateChance 和 effect 内部使用的概率一致。
                 calculateChance: (stats) => Math.min(80, 20 + stats.smarts * 0.6),
                 effect: (stats) => {
                     const chance = Math.min(80, 20 + stats.smarts * 0.6);
@@ -163,11 +162,11 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
             {
                 id: 'phil_choice_work',
                 text: '出卖色相 (打工)',
-                calculateChance: (stats) => 90, // 修改：从100%降为90%
+                calculateChance: (stats) => 90,
                 effect: (stats) => {
                     if (roll(90)) {
                         return {
-                            changes: { satiety: 30, smarts: 5, hissing: -5 }, // Stage 3: Hissing drops
+                            changes: { satiety: 30, smarts: 5, hissing: -5 }, 
                             message: '你跳了。我的可爱是生产资料，罐头是工资。我被异化成了商品。',
                             success: true,
                             effectType: 'neutral'
@@ -189,7 +188,7 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
                 effect: (stats) => {
                     if (roll(20 + stats.hissing * 0.8)) {
                         return {
-                            changes: { satiety: 40, hissing: 15, smarts: 10 }, // Big reward for rebellion
+                            changes: { satiety: 40, hissing: 15, smarts: 10 },
                             message: '你推翻了喂食器！你直接夺取了生产资料！铲屎官惊呆了。',
                             success: true,
                             effectType: 'damage'
@@ -198,7 +197,7 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
                     return {
                         changes: { satiety: -10, hissing: 5 },
                         message: '推不动。铲屎官以为你在闹脾气，把你关了禁闭。（过两天再试试）',
-                        success: false, // Changed to false to allow retry
+                        success: false,
                         effectType: 'neutral'
                     };
                 }
@@ -209,8 +208,9 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
                 calculateChance: (stats) => 100,
                 effect: (stats) => ({
                     changes: { satiety: -15, smarts: 20, health: -5 },
-                    message: '食欲是基因的枷锁。你绝食抗议，思考存在的意义。',
-                    success: false,
+                    // 同样改为 success: true，允许任务链继续，以便达成“三次虚无”
+                    message: '食欲是基因的枷锁。你趴在原地一动不动，看着罐头在空气中氧化。铲屎官以为你病了。(虚无主义+1)',
+                    success: true, 
                     effectType: 'damage'
                 })
             }
@@ -241,7 +241,7 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
             {
                 id: 'phil_choice_oligarch',
                 text: '独善其身 (寡头)',
-                calculateChance: (stats) => 90, // 修改：从100%降为90%
+                calculateChance: (stats) => 90,
                 effect: (stats) => {
                     if (roll(90)) {
                         return {
@@ -266,8 +266,8 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
                 effect: (stats) => {
                     if (roll(40 + stats.smarts * 0.6)) {
                         return {
-                            changes: { smarts: 20, hissing: 20, satiety: -10 }, // Huge hiss boost
-                            message: '你把罐头推下阳台！流浪猫蜂拥而至。全世界流浪猫，联合起来！',
+                            changes: { smarts: 20, hissing: 20, satiety: -10 },
+                            message: '你把罐头推下阳台！流浪猫蜂拥而至。全世界流浪猫，联合起来！(达成：革命家)',
                             success: true,
                             effectType: 'neutral'
                         };
@@ -283,20 +283,22 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
             {
                 id: 'phil_choice_simulation',
                 text: '凝视虚空 (打破第四面墙)',
-                calculateChance: (stats) => 50,
+                calculateChance: (stats) => 100, // 总是尝试，结果取决于历史
                 effect: (stats) => {
-                    if (roll(50)) {
-                        return {
-                            changes: { smarts: 100, health: -10, satiety: -10 },
-                            message: '你意识到，你的猫生只是屏幕前某个碳基生物点击的结果。喵！(获得：超维智慧)',
-                            success: true,
-                            effectType: 'neutral'
-                        }
-                    }
+                    // 检查历史记录：必须在前两个阶段（流浪、豪宅）都选择了虚无类选项
+                    // 注意：领主阶段(stage 2)没有明确的“虚无”选项，通常是辩论，所以主要检查Stage 1和3
+                    // history 是一个字符串数组，包含所有做出的选择ID
+                    // 实际上我们无法直接在这里访问 history，因为effect函数只接收stats。
+                    // 这是一个设计限制。
+                    // 为了绕过这个限制，我们将在 App.tsx 的 calculateAchievements 中做最终判断。
+                    // 但为了在这里给出正确的反馈，我们需要一个巧妙的方法。
+                    // 这里的折衷方案是：总是成功触发剧情，但具体的“成就”判定交给 Ending 计算。
+                    // 或者，我们可以通过概率稍微暗示，但因为无法访问 history，只能默认成功并提示。
+                    
                     return {
-                        changes: { smarts: -10 },
-                        message: '你盯着空气看了太久，觉得自己像个傻子。（过两天再试试）',
-                        success: false,
+                        changes: { smarts: 100, health: -10, satiety: -10 },
+                        message: '你回顾了这一生：在垃圾桶前的思考，在豪宅里的绝食...你意识到，你的猫生只是屏幕前某个碳基生物点击的结果。喵！(如果前置虚无选项都已达成，将获得特殊成就)',
+                        success: true,
                         effectType: 'neutral'
                     }
                 }

@@ -120,13 +120,14 @@ const MODIFIED_LOVE_QUESTS: GameEvent[] = LOVE_QUESTS.map(quest => {
                 if (failedAt['side_hakimi_3'] && day <= failedAt['side_hakimi_3'] + 1) {
                     return { unlocked: false, reason: '需等待雨停' };
                 }
+                
+                // 关键逻辑修改：必须经历过蛋蛋危机（side_egg_crisis在completed中），且没有顺从（history无choice_egg_surrender），且没有失败（failedAt无side_egg_crisis）
+                const eggCrisisResolved = completed.includes('side_egg_crisis');
+                const stillHasBalls = !history.includes('choice_egg_surrender') && !failedAt['side_egg_crisis'];
+
                 return {
-                    // 解锁条件：前置完成 + 11天 + 未主动顺从绝育 + 未绝育抵抗失败
-                    // 如果 failedAt['side_egg_crisis'] 存在，说明抵抗失败被绝育了，不能进入此线
-                    unlocked: completed.includes('side_hakimi_2') && day >= 11 && 
-                              !history.includes('choice_egg_surrender') && 
-                              !failedAt['side_egg_crisis'],
-                    reason: '需第11天且旧情未了'
+                    unlocked: completed.includes('side_hakimi_2') && day >= 11 && eggCrisisResolved && stillHasBalls,
+                    reason: '需保住蛋蛋且旧情未了'
                 };
             },
             choices: quest.choices.map(c => {
@@ -163,13 +164,13 @@ const MODIFIED_LOVE_QUESTS: GameEvent[] = LOVE_QUESTS.map(quest => {
                 if (failedAt['side_hakimi_3_neutered'] && day <= failedAt['side_hakimi_3_neutered'] + 1) {
                     return { unlocked: false, reason: '需平复心情' };
                 }
+                
+                // 逻辑：必须已经没有蛋蛋了 (顺从了 OR 抵抗失败了)
+                const lostBalls = history.includes('choice_egg_surrender') || !!failedAt['side_egg_crisis'];
+
                 return {
-                    // 触发条件：前置任务完成 + 11天后 + (主动顺从绝育 OR 抵抗失败导致绝育)
-                    // 抵抗失败导致绝育 = failedAt['side_egg_crisis'] 存在
-                    unlocked: completed.includes('side_hakimi_2') && day >= 11 && (
-                        history.includes('choice_egg_surrender') || 
-                        !!failedAt['side_egg_crisis']
-                    ),
+                    // 触发条件：前置任务完成 + 11天后 + 已失去蛋蛋
+                    unlocked: completed.includes('side_hakimi_2') && day >= 11 && lostBalls,
                     reason: '需第11天但身已残'
                 };
             }

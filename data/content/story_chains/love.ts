@@ -66,9 +66,14 @@ export const LOVE_QUESTS: GameEvent[] = [
             if (failedAt['side_hakimi_2'] && day <= failedAt['side_hakimi_2'] + 1) {
                 return { unlocked: false, reason: '需等待机会' };
             }
+            
+            // 严厉检查：必须完成了前置任务，并且历史记录中明确包含了“love_choice_dance”
+            // 如果玩家选择了“love_choice_ignore”，这里将返回 false
+            const dancedWithHer = history.includes('love_choice_dance');
+            
             return {
-                unlocked: completed.includes('side_hakimi_1') && history.includes('love_choice_dance') && day >= 7,
-                reason: '需第7天且前缘已结'
+                unlocked: completed.includes('side_hakimi_1') && dancedWithHer && day >= 7,
+                reason: '需第7天且情投意合'
             };
         },
         choices: [
